@@ -138,11 +138,11 @@ void Robot::TeleopPeriodic() {
     double rotations;
     //double rotations = frc::SmartDashboard::GetNumber("SetPoint", rotations);
     bool buttonValueOne;
-    buttonValueOne = m_stick.GetRawButton(1);
+    buttonValueOne = m_stick.GetRawButtonPressed(1);
     bool buttonValueTwo;
-    buttonValueTwo = m_stick.GetRawButton(2);
+    buttonValueTwo = m_stick.GetRawButtonPressed(2);
     bool buttonValueThree;
-    buttonValueThree = m_stick.GetRawButton(3);
+    buttonValueThree = m_stick.GetRawButtonPressed(3);
     if(buttonValueOne == true){
      rotations = 8.68;
     }
