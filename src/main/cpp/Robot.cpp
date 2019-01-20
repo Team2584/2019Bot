@@ -212,7 +212,7 @@ VictorTest->Set(ControlMode::PercentOutput, speedV);
     frc::SmartDashboard::PutNumber("ProcessVariable", m_encoder.GetPosition());
  
   //start pulse
-  solen.StartPulse();
+  //solen.StartPulse();
   //single soleniod trigger
   bool buttonValueSix;
   buttonValueSix = m_stick.GetRawButton(6);
