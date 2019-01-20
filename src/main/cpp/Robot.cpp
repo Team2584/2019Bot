@@ -14,6 +14,7 @@
 #include <frc/SmartDashboard/SmartDashboard.h>
 #include <frc/drive/DifferentialDrive.h>
 #include "rev/CANSparkMax.h"
+#include <PWMVictorSPX.h>
 
 //constexpr double kPi = 3.14159265358979323846264338327950288419716939937510;
   double kP = 0.1001, kI = 0.00001, kD = 0.5, kIz = 0, kFF = 0, kMaxOutput = 1, kMinOutput = -1;
@@ -34,6 +35,8 @@
 
 
 void Robot::RobotInit() {
+    TalonTest = new TalonSRX(3);
+    VictorTest = new VictorSPX(4);
   m_leftFollowMotor.Follow(m_leftLeadMotor);
   m_rightFollowMotor.Follow(m_rightLeadMotor);
 
@@ -134,7 +137,8 @@ void Robot::TeleopPeriodic() {
 
 
 
-
+    double speedT;
+    double speedV;
     double rotations;
     //double rotations = frc::SmartDashboard::GetNumber("SetPoint", rotations);
     bool buttonValueOne;
@@ -143,6 +147,10 @@ void Robot::TeleopPeriodic() {
     buttonValueTwo = m_stick.GetRawButtonPressed(2);
     bool buttonValueThree;
     buttonValueThree = m_stick.GetRawButtonPressed(3);
+    bool buttonValueFour;
+    buttonValueFour = m_stick.GetRawButtonPressed(4);
+    bool buttonValueFive;
+    buttonValueFour = m_stick.GetRawButtonPressed(5);
     if(buttonValueOne == true){
      rotations = 8.68;
     }
@@ -151,6 +159,12 @@ void Robot::TeleopPeriodic() {
     }
     else if(buttonValueThree == true){
       rotations = 0;
+    }
+    else if(buttonValueFour == true){
+      speedT = 100;
+    }
+    else if(buttonValueFive == true){
+      speedV = 100;
     }
 
 
@@ -179,6 +193,9 @@ m_robotDrive.TankDrive(-m_stick.GetRawAxis(1), -m_stick.GetRawAxis(5));
 //m_robotDrive.ArcadeDrive(-m_stick.GetRawAxis(0), -m_stick.GetRawAxis(5);)
 m_pidController.SetReference(rotations, rev::ControlType::kPosition);
 m_pidController2.SetReference(rotations, rev::ControlType::kPosition);
+TalonTest->Set(ControlMode::PercentOutput, speedT);
+VictorTest->Set(ControlMode::PercentOutput, speedV);
+
 
 //frc::SmartDashboard::PutNumber("SetPoint", rotations);
     frc::SmartDashboard::PutNumber("ProcessVariable", m_encoder.GetPosition());
