@@ -197,10 +197,10 @@ m_pidController2.SetReference(rotations, rev::ControlType::kPosition);
   //start pulse
   solen.StartPulse();
   //single soleniod trigger
-  bool buttonValuefour;
+  bool buttonValueSix;
   
-  buttonValuefour = m_stick.GetRawButton(4);
-  if(buttonValuefour == true){
+  buttonValuefour = m_stick.GetRawButton(6);
+  if(buttonValueSix == true){
     solen.Set(1);
   }
   else{
