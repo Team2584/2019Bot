@@ -14,6 +14,8 @@
 #include <frc/SmartDashboard/SmartDashboard.h>
 #include <frc/drive/DifferentialDrive.h>
 #include "rev/CANSparkMax.h"
+#include <frc/Solenoid.h>
+
 
 //constexpr double kPi = 3.14159265358979323846264338327950288419716939937510;
   double kP = 0.1001, kI = 0.00001, kD = 0.5, kIz = 0, kFF = 0, kMaxOutput = 1, kMinOutput = -1;
@@ -31,6 +33,12 @@
   rev::CANPIDController m_pidController = m_motor.GetPIDController();
   rev::CANPIDController m_pidController2 = m_slaveMotor.GetPIDController();
   rev::CANEncoder m_encoder = m_motor.GetEncoder();
+  //soleniod set up
+  static const int m_chanel = 1, mod_num = 3, pulsedur = 1;
+  frc::Solenoid solen{m_chanel};
+
+
+
 
 
 void Robot::RobotInit() {
@@ -67,6 +75,9 @@ void Robot::RobotInit() {
   m_chooser.SetDefaultOption(kAutoNameDefault, kAutoNameDefault);
   m_chooser.AddOption(kAutoNameCustom, kAutoNameCustom);
   frc::SmartDashboard::PutData("Auto Modes", &m_chooser);*/
+
+  // set up soleniod pulse 
+  solen.SetPulseDuration(pulsedur);
 }
 
 /**
@@ -183,6 +194,19 @@ m_pidController2.SetReference(rotations, rev::ControlType::kPosition);
 //frc::SmartDashboard::PutNumber("SetPoint", rotations);
     frc::SmartDashboard::PutNumber("ProcessVariable", m_encoder.GetPosition());
  
+  //start pulse
+  solen.StartPulse();
+  //single soleniod trigger
+  bool buttonValuefour;
+  
+  buttonValuefour = m_stick.GetRawButton(4);
+  if(buttonValuefour == true){
+    solen.Set(1);
+  }
+  else{
+    solen.Set(0);
+  }
+  
 };
 
 void Robot::TestPeriodic() {}
