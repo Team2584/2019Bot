@@ -6,17 +6,21 @@
 /*----------------------------------------------------------------------------*/
 
 #pragma once
-
 #include <string>
 #include "ctre/phoenix.h"
 #include <frc/IterativeRobot.h>
 #include <frc/smartdashboard/SendableChooser.h>
 #include <PWMVictorSPX.h>
+#include <frc/WPILib.h>
+#include <DigitalInput.h>
+#include <DigitalSource.h>
 
 class Robot : public frc::IterativeRobot {
+    frc::DigitalInput* limitSwitch;
+    TalonSRX * TalonTest;
+    VictorSPX * VictorTest;
  public:
-  TalonSRX * TalonTest;
-  VictorSPX * VictorTest;
+
   void RobotInit() override;
   void RobotPeriodic() override;
   void AutonomousInit() override;
