@@ -104,6 +104,7 @@ void Robot::TeleopPeriodic() {
     double max = frc::SmartDashboard::GetNumber("Max Output", 0);
     double min = frc::SmartDashboard::GetNumber("Min Output", 0);
     double rotations;
+    double speedV;
     bool buttonValueOne;
     buttonValueOne = m_stick.GetRawButtonPressed(1);
     bool buttonValueTwo;
@@ -113,7 +114,7 @@ void Robot::TeleopPeriodic() {
     bool buttonValueFour;
     buttonValueFour = m_stick.GetRawButtonPressed(4);
     bool buttonValueFive;
-    buttonValueFour = m_stick.GetRawButtonPressed(5);
+    buttonValueFive = m_stick.GetRawButtonPressed(5);
     if(buttonValueOne == true){
      rotations = 5;
     }
@@ -122,6 +123,9 @@ void Robot::TeleopPeriodic() {
     }
     else if(buttonValueThree == true){
       rotations = 0;
+    }
+    else if(buttonValueFour == true){
+      speedV = 10;
     }
 
     // if PID coefficients on SmartDashboard have changed, write new values to controller
@@ -135,6 +139,8 @@ void Robot::TeleopPeriodic() {
       kMinOutput = min; kMaxOutput = max; }
     
 m_pidController.SetReference(rotations, rev::ControlType::kPosition);
+//m_motor.Set(speedV);
+
 
 //frc::SmartDashboard::PutNumber("SetPoint", rotations);
     frc::SmartDashboard::PutNumber("ProcessVariable", m_encoder.GetPosition());
