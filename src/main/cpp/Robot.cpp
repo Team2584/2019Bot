@@ -35,6 +35,8 @@
   rev::CANPIDController m_pidController = m_motor.GetPIDController();
   rev::CANPIDController m_pidController2 = m_slaveMotor.GetPIDController();
   rev::CANEncoder m_encoder = m_motor.GetEncoder();
+  double encoderPos = m_encoder.GetPosition();
+  double encoderVel = m_encoder.GetVelocity();
   //soleniod set up
   static const int m_chanel = 1, mod_num = 3, pulsedur = 1;
   frc::Solenoid solen{m_chanel};
@@ -45,6 +47,7 @@ void Robot::RobotInit() {
   m_leftFollowMotor.Follow(m_leftLeadMotor);
   m_rightFollowMotor.Follow(m_rightLeadMotor);
   limitSwitch = new frc::DigitalInput(1);
+  // set PID coefficients
   m_pidController.SetP(kP);
   m_pidController.SetI(kI);
   m_pidController.SetD(kD);
@@ -58,7 +61,6 @@ void Robot::RobotInit() {
   m_pidController2.SetIZone(kIz);
   m_pidController2.SetFF(kFF);
   m_pidController2.SetOutputRange(kMinOutput, kMaxOutput);
-  // set PID coefficients
 
   // display PID coefficients on SmartDashboard
   frc::SmartDashboard::PutNumber("P Gain", kP);
@@ -68,13 +70,8 @@ void Robot::RobotInit() {
   frc::SmartDashboard::PutNumber("Feed Forward", kFF);
   frc::SmartDashboard::PutNumber("Max Output", kMaxOutput);
   frc::SmartDashboard::PutNumber("Min Output", kMinOutput);
-  // frc::SmartDashboard::PutNumber("Set Rotations", 0);
-  /*srx.Set(ControlMode::PercentOutput, 0);
-  m_encoder.SetDistancePerPulse(kPi * 6) /360.0);
-  m_chooser.SetDefaultOption(kAutoNameDefault, kAutoNameDefault);
-  m_chooser.AddOption(kAutoNameCustom, kAutoNameCustom);
-  frc::SmartDashboard::PutData("Auto Modes", &m_chooser);*/
-
+  frc::SmartDashboard::PutNumber("Encoder Position", encoderPos);
+  frc::SmartDashboard::PutNumber("Encoder Velocity", encoderVel);
   // set up soleniod pulse 
   solen.SetPulseDuration(pulsedur);
 }
