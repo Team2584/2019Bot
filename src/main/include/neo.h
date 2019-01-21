@@ -6,10 +6,8 @@
 /*----------------------------------------------------------------------------*/
 
 #pragma once
-#include <string>
 
 class neo {
  public:
- neo();
-   void setupMotor(std::string motorName, int ID);
+  neo();
 };
