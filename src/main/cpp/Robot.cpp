@@ -21,44 +21,20 @@
 
 //constexpr double kPi = 3.14159265358979323846264338327950288419716939937510;
   double kP = 0.1001, kI = 0.00001, kD = 0.5, kIz = 0, kFF = 0, kMaxOutput = 1, kMinOutput = -1;
-  static const int leftLeadDeviceID = 1, rightLeadDeviceID = 2, leftFollowDeviceID = 3, rightFollowDeviceID = 4;
-  rev::CANSparkMax m_leftLeadMotor{leftLeadDeviceID, rev::CANSparkMax::MotorType::kBrushless};
-  rev::CANSparkMax m_rightLeadMotor{rightLeadDeviceID, rev::CANSparkMax::MotorType::kBrushless};
-  rev::CANSparkMax m_leftFollowMotor{leftFollowDeviceID, rev::CANSparkMax::MotorType::kBrushless};
-  rev::CANSparkMax m_rightFollowMotor{rightFollowDeviceID, rev::CANSparkMax::MotorType::kBrushless};
   //SETUP FOR PID MOTORS
-  static const int deviceID = 5;
-  static const int pidID = 6;
+  static const int deviceID = 1;
   rev::CANSparkMax m_motor{deviceID, rev::CANSparkMax::MotorType::kBrushless};
-  rev::CANSparkMax m_slaveMotor{pidID, rev::CANSparkMax::MotorType::kBrushless};
-  //rev::CANSparkMax m_motorFollower{motorFollowerDeviceID, rev::CANSparkMax::MotorType::kBrushless};
   rev::CANPIDController m_pidController = m_motor.GetPIDController();
-  rev::CANPIDController m_pidController2 = m_slaveMotor.GetPIDController();
   rev::CANEncoder m_encoder = m_motor.GetEncoder();
-  //soleniod set up
-  static const int m_chanel = 1, mod_num = 3, pulsedur = 1;
-  frc::Solenoid solen{m_chanel};
+  double encoderPos = m_encoder.GetPosition();
 
 void Robot::RobotInit() {
-  TalonTest = new TalonSRX(3);
-  VictorTest = new VictorSPX(4);
-  m_leftFollowMotor.Follow(m_leftLeadMotor);
-  m_rightFollowMotor.Follow(m_rightLeadMotor);
-  limitSwitch = new frc::DigitalInput(1);
   m_pidController.SetP(kP);
   m_pidController.SetI(kI);
   m_pidController.SetD(kD);
   m_pidController.SetIZone(kIz);
   m_pidController.SetFF(kFF);
   m_pidController.SetOutputRange(kMinOutput, kMaxOutput);
-
-  m_pidController2.SetP(kP);
-  m_pidController2.SetI(kI);
-  m_pidController2.SetD(kD);
-  m_pidController2.SetIZone(kIz);
-  m_pidController2.SetFF(kFF);
-  m_pidController2.SetOutputRange(kMinOutput, kMaxOutput);
-  // set PID coefficients
 
   // display PID coefficients on SmartDashboard
   frc::SmartDashboard::PutNumber("P Gain", kP);
@@ -68,15 +44,8 @@ void Robot::RobotInit() {
   frc::SmartDashboard::PutNumber("Feed Forward", kFF);
   frc::SmartDashboard::PutNumber("Max Output", kMaxOutput);
   frc::SmartDashboard::PutNumber("Min Output", kMinOutput);
+  frc::SmartDashboard::PutNumber("Encoder Position", encoderPos);
   // frc::SmartDashboard::PutNumber("Set Rotations", 0);
-  /*srx.Set(ControlMode::PercentOutput, 0);
-  m_encoder.SetDistancePerPulse(kPi * 6) /360.0);
-  m_chooser.SetDefaultOption(kAutoNameDefault, kAutoNameDefault);
-  m_chooser.AddOption(kAutoNameCustom, kAutoNameCustom);
-  frc::SmartDashboard::PutData("Auto Modes", &m_chooser);*/
-
-  // set up soleniod pulse 
-  solen.SetPulseDuration(pulsedur);
 }
 
 /**
@@ -122,7 +91,6 @@ void Robot::AutonomousPeriodic() {
  
 //TalonSRX srx = {0};
 frc::Joystick m_stick{3};
-frc::DifferentialDrive m_robotDrive{m_leftLeadMotor, m_rightLeadMotor};
 
 void Robot::TeleopInit() {}
 
@@ -135,13 +103,7 @@ void Robot::TeleopPeriodic() {
     double ff = frc::SmartDashboard::GetNumber("Feed Forward", 0);
     double max = frc::SmartDashboard::GetNumber("Max Output", 0);
     double min = frc::SmartDashboard::GetNumber("Min Output", 0);
-    //double rotations = frc::SmartDashboard::GetNumber("Set Rotations", 0);
-    //double btn;
-
-    double speedT;
-    double speedV;
     double rotations;
-    //double rotations = frc::SmartDashboard::GetNumber("SetPoint", rotations);
     bool buttonValueOne;
     buttonValueOne = m_stick.GetRawButtonPressed(1);
     bool buttonValueTwo;
@@ -153,19 +115,13 @@ void Robot::TeleopPeriodic() {
     bool buttonValueFive;
     buttonValueFour = m_stick.GetRawButtonPressed(5);
     if(buttonValueOne == true){
-     rotations = 8.68;
+     rotations = 1;
     }
     else if(buttonValueTwo == true){
-     rotations = 17.36;
+     rotations = 2;
     }
     else if(buttonValueThree == true){
       rotations = 0;
-    }
-    else if(buttonValueFour == true){
-      speedT = 100;
-    }
-    else if(buttonValueFive == true){
-      speedV = 100;
     }
 
     // if PID coefficients on SmartDashboard have changed, write new values to controller
@@ -177,42 +133,11 @@ void Robot::TeleopPeriodic() {
     if((max != kMaxOutput) || (min != kMinOutput)) { 
       m_pidController.SetOutputRange(min, max); 
       kMinOutput = min; kMaxOutput = max; }
-
-
-    if((p != kP)) { m_pidController2.SetP(p); kP = p; }
-    if((i != kI)) { m_pidController2.SetI(i); kI = i; }
-    if((d != kD)) { m_pidController2.SetD(d); kD = d; }
-    if((iz != kIz)) { m_pidController2.SetIZone(iz); kIz = iz; }
-    if((ff != kFF)) { m_pidController2.SetFF(ff); kFF = ff; }
-    if((max != kMaxOutput) || (min != kMinOutput)) { 
-      m_pidController2.SetOutputRange(min, max); 
-      kMinOutput = min; kMaxOutput = max; }
     
-m_robotDrive.TankDrive(-m_stick.GetRawAxis(1), -m_stick.GetRawAxis(5));
-//m_robotDrive.ArcadeDrive(-m_stick.GetRawAxis(0), -m_stick.GetRawAxis(5);)
 m_pidController.SetReference(rotations, rev::ControlType::kPosition);
-m_pidController2.SetReference(rotations, rev::ControlType::kPosition);
-TalonTest->Set(ControlMode::PercentOutput, speedT);
-VictorTest->Set(ControlMode::PercentOutput, speedV);
-
 
 //frc::SmartDashboard::PutNumber("SetPoint", rotations);
     frc::SmartDashboard::PutNumber("ProcessVariable", m_encoder.GetPosition());
- 
-  //start pulse
-  solen.StartPulse();
-  //single soleniod trigger
-  bool buttonValueSix;
-  buttonValueSix = m_stick.GetRawButton(6);
-  if(buttonValueSix == true){
-    solen.Set(1);
-  }
-  else{
-    solen.Set(0);
-  }
-  while(limitSwitch->Get() == true){
-    speedT = 10;
-  }
   
 };
 
