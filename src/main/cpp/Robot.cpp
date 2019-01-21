@@ -15,10 +15,11 @@
 #include <frc/drive/DifferentialDrive.h>
 #include "rev/CANSparkMax.h"
 #include "neo.h"
+#include <string>
 
 //constexpr double kPi = 3.14159265358979323846264338327950288419716939937510;
-  neo setup;
-
+  neo n;
+  //n.setupMotor();
   double kP = 0.1001, kI = 0.00001, kD = 0.5, kIz = 0, kFF = 0, kMaxOutput = 1, kMinOutput = -1;
   static const int leftLeadDeviceID = 1, rightLeadDeviceID = 2, leftFollowDeviceID = 3, rightFollowDeviceID = 4;
   //setup.SetupMotor(leftLeadMotor, 1);

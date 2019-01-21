@@ -4,12 +4,12 @@
 /* must be accompanied by the FIRST BSD license file in the root directory of */
 /* the project.                                                               */
 /*----------------------------------------------------------------------------*/
-#include "string"
+
 #pragma once
+#include <string>
 
 class neo {
  public:
- void setupMotor(std::string name, int ID){};
- void setupEncoder(std::string name, std::string motor){};
-  neo();
+ neo();
+   void setupMotor(std::string motorName, int ID);
 };
