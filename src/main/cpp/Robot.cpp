@@ -115,10 +115,10 @@ void Robot::TeleopPeriodic() {
     bool buttonValueFive;
     buttonValueFour = m_stick.GetRawButtonPressed(5);
     if(buttonValueOne == true){
-     rotations = 1;
+     rotations = 5;
     }
     else if(buttonValueTwo == true){
-     rotations = 2;
+     rotations = 10;
     }
     else if(buttonValueThree == true){
       rotations = 0;
