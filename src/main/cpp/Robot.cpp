@@ -4,11 +4,16 @@
 /* must be accompanied by the FIRST BSD license file in the root directory of */
 /* the project.                                                               */
 /*----------------------------------------------------------------------------*/
-#include <WPILib.h>
+#include <frc/WPILib.h>
 #include <frc/Joystick.h>
 #include <frc/TimedRobot.h>
 #include <frc/SmartDashboard/SmartDashboard.h>
 #include "rev/CANSparkMax.h"
+#include "stdlib.h"
+#include <time.h>
+#include <stdio.h>
+#include <iostream>
+using namespace std; 
 
 class Robot : public frc::TimedRobot {
   // initialize motor
@@ -26,6 +31,7 @@ class Robot : public frc::TimedRobot {
 
   // Encoder object created to display position values
   rev::CANEncoder m_encoder = m_motor.GetEncoder();
+
 
   // PID coefficients
   double kP = 0.85, kI = 0.00005, kD = 0.05, kIz = 0, kFF = 0, kMaxOutput = 0.2, kMinOutput = -0.2;
@@ -71,12 +77,17 @@ class Robot : public frc::TimedRobot {
     bool buttonValueTwo;
     buttonValueTwo = m_stick.GetRawButton(2);
     int button;
+    bool buttonValueThree;
+    buttonValueThree = m_stick.GetRawButton(3);
     //position = 0;
-    if(buttonValueOne == true&&position!=maxPos){
-     position++;
+    if(buttonValueOne == true){
+     position = 1;
     }
-    else if(buttonValueTwo == true&&position!=minPos){
-     position--;
+    else if(buttonValueTwo == true){
+     position = 0;
+    }
+    else if(buttonValueThree == true){
+      position = 2;
     }
     if(position == 1){
       rotations = 5;
