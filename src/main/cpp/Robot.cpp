@@ -38,8 +38,8 @@
   double encoderPos = m_encoder.GetPosition();
   double encoderVel = m_encoder.GetVelocity();
   //soleniod set up
-  static const int m_chanel = 1, mod_num = 3, pulsedur = 1;
-  frc::Solenoid solen{m_chanel};
+  //static const int m_chanel = 1, mod_num = 3, pulsedur = 1;
+  //frc::Solenoid solen{m_chanel};
 
 void Robot::RobotInit() {
   TalonTest = new TalonSRX(3);
@@ -73,7 +73,7 @@ void Robot::RobotInit() {
   frc::SmartDashboard::PutNumber("Encoder Position", encoderPos);
   frc::SmartDashboard::PutNumber("Encoder Velocity", encoderVel);
   // set up soleniod pulse 
-  solen.SetPulseDuration(pulsedur);
+  //solen.SetPulseDuration(pulsedur);
 }
 
 /**
@@ -119,7 +119,7 @@ void Robot::AutonomousPeriodic() {
  
 //TalonSRX srx = {0};
 frc::Joystick m_stick{3};
-frc::DifferentialDrive m_robotDrive{m_leftLeadMotor, m_rightLeadMotor};
+//frc::DifferentialDrive m_robotDrive{m_leftLeadMotor, m_rightLeadMotor};
 
 void Robot::TeleopInit() {}
 
@@ -185,7 +185,7 @@ void Robot::TeleopPeriodic() {
       m_pidController2.SetOutputRange(min, max); 
       kMinOutput = min; kMaxOutput = max; }
     
-m_robotDrive.TankDrive(-m_stick.GetRawAxis(1), -m_stick.GetRawAxis(5));
+//m_robotDrive.TankDrive(-m_stick.GetRawAxis(1), -m_stick.GetRawAxis(5));
 //m_robotDrive.ArcadeDrive(-m_stick.GetRawAxis(0), -m_stick.GetRawAxis(5);)
 m_pidController.SetReference(rotations, rev::ControlType::kPosition);
 m_pidController2.SetReference(rotations, rev::ControlType::kPosition);
@@ -197,16 +197,16 @@ VictorTest->Set(ControlMode::PercentOutput, speedV);
     frc::SmartDashboard::PutNumber("ProcessVariable", m_encoder.GetPosition());
  
   //start pulse
-  solen.StartPulse();
+  //solen.StartPulse();
   //single soleniod trigger
   bool buttonValueSix;
   buttonValueSix = m_stick.GetRawButton(6);
-  if(buttonValueSix == true){
+  /*if(buttonValueSix == true){
     solen.Set(1);
   }
   else{
     solen.Set(0);
-  }
+  }*/
   while(limitSwitch->Get() == true){
     speedT = 10;
   }
