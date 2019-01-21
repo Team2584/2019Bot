@@ -22,9 +22,12 @@
 //constexpr double kPi = 3.14159265358979323846264338327950288419716939937510;
   double kP = 0.1001, kI = 0.00001, kD = 0.5, kIz = 0, kFF = 0, kMaxOutput = 1, kMinOutput = -1;
   //SETUP FOR PID MOTORS
-  static const int deviceID = 1;
+  static const int deviceID = 5;
+  static const int followerID = 6;
   rev::CANSparkMax m_motor{deviceID, rev::CANSparkMax::MotorType::kBrushless};
+  rev::CANSparkMax m_follower{deviceID, rev::CANSparkMax::MotorType::kBrushless};
   rev::CANPIDController m_pidController = m_motor.GetPIDController();
+  rev::CANPIDController m_pidController2 = m_follower.GetPIDController();
   rev::CANEncoder m_encoder = m_motor.GetEncoder();
   double encoderPos = m_encoder.GetPosition();
 
@@ -35,6 +38,13 @@ void Robot::RobotInit() {
   m_pidController.SetIZone(kIz);
   m_pidController.SetFF(kFF);
   m_pidController.SetOutputRange(kMinOutput, kMaxOutput);
+
+  m_pidController2.SetP(kP);
+  m_pidController2.SetI(kI);
+  m_pidController2.SetD(kD);
+  m_pidController2.SetIZone(kIz);
+  m_pidController2.SetFF(kFF);
+  m_pidController2.SetOutputRange(kMinOutput, kMaxOutput);
 
   // display PID coefficients on SmartDashboard
   frc::SmartDashboard::PutNumber("P Gain", kP);
@@ -104,7 +114,6 @@ void Robot::TeleopPeriodic() {
     double max = frc::SmartDashboard::GetNumber("Max Output", 0);
     double min = frc::SmartDashboard::GetNumber("Min Output", 0);
     double rotations;
-    double speedV;
     bool buttonValueOne;
     buttonValueOne = m_stick.GetRawButtonPressed(1);
     bool buttonValueTwo;
@@ -124,9 +133,7 @@ void Robot::TeleopPeriodic() {
     else if(buttonValueThree == true){
       rotations = 0;
     }
-    else if(buttonValueFour == true){
-      speedV = 10;
-    }
+
 
     // if PID coefficients on SmartDashboard have changed, write new values to controller
     if((p != kP)) { m_pidController.SetP(p); kP = p; }
@@ -137,8 +144,19 @@ void Robot::TeleopPeriodic() {
     if((max != kMaxOutput) || (min != kMinOutput)) { 
       m_pidController.SetOutputRange(min, max); 
       kMinOutput = min; kMaxOutput = max; }
+
+    if((p != kP)) { m_pidController2.SetP(p); kP = p; }
+    if((i != kI)) { m_pidController2.SetI(i); kI = i; }
+    if((d != kD)) { m_pidController2.SetD(d); kD = d; }
+    if((iz != kIz)) { m_pidController2.SetIZone(iz); kIz = iz; }
+    if((ff != kFF)) { m_pidController2.SetFF(ff); kFF = ff; }
+    if((max != kMaxOutput) || (min != kMinOutput)) { 
+      m_pidController2.SetOutputRange(min, max); 
+      kMinOutput = min; kMaxOutput = max; }
     
 m_pidController.SetReference(rotations, rev::ControlType::kPosition);
+m_pidController2.SetReference(rotations, rev::ControlType::kPosition);
+
 //m_motor.Set(speedV);
 
 
