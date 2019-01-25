@@ -10,7 +10,7 @@
 #include "ctre/Phoenix.h"
 #include <frc/encoder.h>
 #include <iostream>
-//#include <rev/SparkMax.h>
+#include <rev/SparkMax.h>
 #include <frc/SmartDashboard/SmartDashboard.h>
 #include <frc/drive/DifferentialDrive.h>
 #include "rev/CANSparkMax.h"
@@ -33,7 +33,7 @@
   //rev::CANSparkMax m_motorFollower{motorFollowerDeviceID, rev::CANSparkMax::MotorType::kBrushless};
   rev::CANPIDController m_pidShoulder = m_shoulder.GetPIDController();
   rev::CANPIDController m_pidWrist = m_wrist.GetPIDController();
-  rev::CANEncoder m_encoder = m_motor.GetEncoder();
+  rev::CANEncoder m_ShoulderEncoder = m_shoulder.GetEncoder();
 
   double shoulderPos = m_shoulder.GetPosition();
   double shoulderVel = m_shoulder.GetVelocity();
@@ -53,7 +53,7 @@ void Robot::RobotInit() {
   m_rightFollowMotor1.Follow(m_rightLeadMotor);
   m_rightFollowMotor2.Follow(m_rightLeadMotor);
 
-  m_pidShoulder.SetP(kP);
+ /* m_pidShoulder.SetP(kP);
   m_pidShoulder.SetI(kI);
   m_pidShoulder.SetD(kD);
   m_pidShoulder.SetIZone(kIz);
@@ -65,7 +65,7 @@ void Robot::RobotInit() {
   m_pidWrist.SetD(kD);
   m_pidWrist.SetIZone(kIz);
   m_pidWrist.SetFF(kFF);
-  m_pidWrist.SetOutputRange(kMinOutput, kMaxOutput);
+  m_pidWrist.SetOutputRange(kMinOutput, kMaxOutput);*/
 
   m_chooser.SetDefaultOption(kAutoNameDefault, kAutoNameDefault);
   m_chooser.AddOption(kAutoNameCustom, kAutoNameCustom);
@@ -140,10 +140,10 @@ void Robot::TeleopPeriodic() {
     buttonValueFour = m_stick.GetRawButtonPressed(4);
     bool buttonValueFive;
     buttonValueFour = m_stick.GetRawButtonPressed(5);
-    if(buttonValueOne == true&&positionS!=maxPos){
+    if(buttonValueOne == true&&positionS!=maxPosSW){
      positionS++;
     }
-    else if(buttonValueThree == true&&positionS!=minPos){
+    else if(buttonValueThree == true&&positionS!=minPosSW){
       positionS--;
     }
     if(buttonValueTwo == true&&positionH!=maxPosPH){
