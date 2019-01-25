@@ -5,37 +5,41 @@
 /* the project.                                                               */
 /*----------------------------------------------------------------------------*/
 
+#include "frc/WPILib.h"
 #include "Robot.h"
-
+#include "ctre/Phoenix.h"
+#include <frc/encoder.h>
 #include <iostream>
-
-#include <frc/smartdashboard/SmartDashboard.h>
-
+//#include <rev/SparkMax.h>
+#include <frc/SmartDashboard/SmartDashboard.h>
 #include <frc/drive/DifferentialDrive.h>
-
 #include "rev/CANSparkMax.h"
-
-#include <frc/PWMVictorSPX.h>
-
+#include <PWMVictorSPX.h>
 #include <frc/Solenoid.h>
-
 #include <DigitalInput.h>
-
 #include <DigitalSource.h>
 
-#include "ctre/Phoenix.h"
+  static const int leftLeadDeviceID = 1, rightLeadDeviceID = 2, leftFollowDeviceID1 = 3, rightFollowDeviceID1 = 4, leftFollowDeviceID2 = 5, rightFollowDeviceID2 = 6;
+  rev::CANSparkMax m_leftLeadMotor{leftLeadDeviceID, rev::CANSparkMax::MotorType::kBrushless};
+  rev::CANSparkMax m_rightLeadMotor{rightLeadDeviceID, rev::CANSparkMax::MotorType::kBrushless};
+  rev::CANSparkMax m_leftFollowMotor1{leftFollowDeviceID1, rev::CANSparkMax::MotorType::kBrushless};
+  rev::CANSparkMax m_rightFollowMotor1{rightFollowDeviceID1, rev::CANSparkMax::MotorType::kBrushless};
+  rev::CANSparkMax m_leftFollowMotor2{leftFollowDeviceID2, rev::CANSparkMax::MotorType::kBrushless};
+  rev::CANSparkMax m_rightFollowMotor2{rightFollowDeviceID2, rev::CANSparkMax::MotorType::kBrushless};  
 
-#include <frc/encoder.h>
+  static const int shoulderID = 7, wristID = 8;
+  rev::CANSparkMax m_shoulder{shoulderID, rev::CANSparkMax::MotorType::kBrushless};
+  rev::CANSparkMax m_wrist{wristID, rev::CANSparkMax::MotorType::kBrushed};
+  //rev::CANSparkMax m_motorFollower{motorFollowerDeviceID, rev::CANSparkMax::MotorType::kBrushless};
+  rev::CANPIDController m_pidShoulder = m_shoulder.GetPIDController();
+  rev::CANPIDController m_pidWrist = m_wrist.GetPIDController();
+  rev::CANEncoder m_encoder = m_motor.GetEncoder();
 
-#include "frc/WPILib.h"
+  double shoulderPos = m_shoulder.GetPosition();
+  double shoulderVel = m_shoulder.GetVelocity();
 
-#include "MotorSetup.h"
-
-VictorSPX * topRoller;
-TalonSRX * hatchMotor;
-TalonSRX * platformLead;
-VictorSPX * platformFollower;
-VictorSPX * crawlMotor;
+  double wristPos = m_wrist.GetPosition();
+  double wristVel = m_wrist.GetVelocity();
 
 void Robot::RobotInit() {
   topRoller = new VictorSPX(1);
@@ -44,19 +48,24 @@ void Robot::RobotInit() {
   platformFollower = new VictorSPX(4);
   crawlMotor = new VictorSPX(5);
 
-  m_set = new MotorSetup();
-  m_set->SetTopRoller(topRoller);
-  m_set->SetHatchMotor(hatchMotor);
-  m_set->SetPlatformLead(platformLead);
-  m_set->SetPlatformFollower(platformFollower);
-  m_set->SetCrawlMotor(crawlMotor);
+  m_leftFollowMotor1.Follow(m_leftLeadMotor);  
+  m_leftFollowMotor2.Follow(m_leftLeadMotor);
+  m_rightFollowMotor1.Follow(m_rightLeadMotor);
+  m_rightFollowMotor2.Follow(m_rightLeadMotor);
 
-  m_set->InitializeMotors();
+  m_pidShoulder.SetP(kP);
+  m_pidShoulder.SetI(kI);
+  m_pidShoulder.SetD(kD);
+  m_pidShoulder.SetIZone(kIz);
+  m_pidShoulder.SetFF(kFF);
+  m_pidShoulder.SetOutputRange(kMinOutput, kMaxOutput);
 
-  m_set->pidSetupShoulder();
-  m_set->pidSetupWrist();
-
-  m_set->printValues();
+  m_pidWrist.SetP(kP);
+  m_pidWrist.SetI(kI);
+  m_pidWrist.SetD(kD);
+  m_pidWrist.SetIZone(kIz);
+  m_pidWrist.SetFF(kFF);
+  m_pidWrist.SetOutputRange(kMinOutput, kMaxOutput);
 
   m_chooser.SetDefaultOption(kAutoNameDefault, kAutoNameDefault);
   m_chooser.AddOption(kAutoNameCustom, kAutoNameCustom);
@@ -105,62 +114,64 @@ void Robot::AutonomousPeriodic() {
   }
 }
 
-frc::Joystick m_stick{3};
-frc::DifferentialDrive m_robotDrive{m_leftLeadMotor, m_rightLeadMotor};
-
 void Robot::TeleopInit() {}
 
+double positionS = 0;
+double positionW = 0;
+double positionH = 0;
+double maxPosSW = 2;
+double minPosSW = 0;
+double maxPosPH = 1;
+double minPosPH = 0;
+
 void Robot::TeleopPeriodic() {
-
-  double encoderPosS = m_ShoulderEncoder.GetPosition();
-  double encoderVelS = m_ShoulderEncoder.GetVelocity();
-  double encoderPosW = m_WristEncoder.GetPosition();
-  double encoderVelW = m_WristEncoder.GetVelocity();
-
-  buttonValueOne = m_stick.GetRawButtonPressed(1);
-  buttonValueTwo = m_stick.GetRawButtonPressed(2);
-  buttonValueThree = m_stick.GetRawButtonPressed(3);
-  buttonValueFour = m_stick.GetRawButtonPressed(4);
-  buttonValueFive = m_stick.GetRawButtonPressed(5);
-  buttonValueSix = m_stick.GetRawButtonPressed(6);
-
-  if(buttonValueOne == true&&positionS!=maxPos){
-     positionS++
+    double speedTopRoller;
+    double speedV;
+    double rotations;
+    double rotationsH;
+    //double rotations = frc::SmartDashboard::GetNumber("SetPoint", rotations);
+    bool buttonValueOne;
+    buttonValueOne = m_stick.GetRawButtonPressed(1);
+    bool buttonValueTwo;
+    buttonValueTwo = m_stick.GetRawButtonPressed(2);
+    bool buttonValueThree;
+    buttonValueThree = m_stick.GetRawButtonPressed(3);
+    bool buttonValueFour;
+    buttonValueFour = m_stick.GetRawButtonPressed(4);
+    bool buttonValueFive;
+    buttonValueFour = m_stick.GetRawButtonPressed(5);
+    if(buttonValueOne == true&&positionS!=maxPos){
+     positionS++;
     }
-  else if(buttonValueThree == true&&positionS!=minPos){
-     positionS--;
+    else if(buttonValueThree == true&&positionS!=minPos){
+      positionS--;
     }
-  if(positionS == 0){
-    rotationS = 0.125;
-  }
-  else if(positionS == 1){
-    rotationS = 5;
-  }
-  else if(positionS == 2){
-    rotationS = 10;
-  }
-
-  if(buttonValueTwo == true&&positionW!=maxPos){
-     positionW++
+    if(buttonValueTwo == true&&positionH!=maxPosPH){
+      positionH++;
+    }  
+    else if(buttonValueFour == true&&positionH!=minPosPH){
+      positionH--;
+    } 
+    if(positionS == 0){
+      rotations = 0.125;
     }
-  else if(buttonValueThree == true&&positionW!=minPos){
-     positionW--;
+    else if(positionS == 1){
+      rotations = 5;
     }
-  if(positionW == 0){
-    rotationW = 0.125;
-  }
-  else if(positionW == 1){
-    rotationW = 5;
-  }
-  else if(positionW == 2){
-    rotationW = 10;
-  }  
+    else if(positionS == 2){
+      rotations = 10;
+    }
+    if(positionH == 0){
+      rotationsH = 0;
+    }
+    else if(positionH == 1){
+      rotationsH = 0.5;
+    }
 
-  m_robotDrive.ArcadeDrive(m_stick.GetY(), m_stick.GetX());
-
-  m_pidControllerShoulder.SetReference(rotationS, rev::ControlType::kPosition);
-  m_pidControllerWrist.SetReference(rotationW, rev::ControlType::kPosition);
-
+    m_pidShoulder.SetReference(rotations, rev::ControlType::kPosition);
+    m_pidWrist.SetReference(rotations, rev::ControlType::kPosition);
+    topRoller->Set(ControlMode::PercentOutput, speedTopRoller);
+    hatchMotor->Set(ControlMode::Position, rotationsH);
 }
 
 void Robot::TestPeriodic() {}

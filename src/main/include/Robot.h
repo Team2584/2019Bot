@@ -22,12 +22,6 @@ class Robot : public frc::IterativeRobot {
   void TeleopPeriodic() override;
   void TestPeriodic() override;
 
-  VictorSPX * topRoller;
-TalonSRX * hatchMotor;
-TalonSRX * platformLead;
-VictorSPX * platformFollower;
-VictorSPX * crawlMotor;
-
  private:
   frc::SendableChooser<std::string> m_chooser;
   const std::string kAutoNameDefault = "Default";
