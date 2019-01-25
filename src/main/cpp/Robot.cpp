@@ -25,11 +25,11 @@
 
 #include "ctre/Phoenix.h"
 
-#include <frc/encoder.h>
+#include <frc/Encoder.h>
 
 #include "frc/WPILib.h"
 
-#include "MotorSetup.h"
+//#include "MotorSetup.h"
 
 VictorSPX * topRoller;
 TalonSRX * hatchMotor;
