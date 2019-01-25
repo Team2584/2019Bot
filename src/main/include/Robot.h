@@ -13,6 +13,12 @@
 #include <frc/smartdashboard/SendableChooser.h>
 
 class Robot : public frc::IterativeRobot {
+    TalonSRX * hatchMotor;
+    TalonSRX * platformLead;
+    VictorSPX * platformFollower;
+    VictorSPX * topRoller;
+    VictorSPX * crawlMotor;
+
  public:
   void RobotInit() override;
   void RobotPeriodic() override;
