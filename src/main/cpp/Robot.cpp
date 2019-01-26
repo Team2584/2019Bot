@@ -29,7 +29,7 @@ using namespace rev;
   CANSparkMax m_rightLeadMotor{rightLeadDeviceID, CANSparkMax::MotorType::kBrushless};
   CANSparkMax m_leftFollowMotor{leftFollowDeviceID, CANSparkMax::MotorType::kBrushless};
   CANSparkMax m_rightFollowMotor{rightFollowDeviceID, CANSparkMax::MotorType::kBrushless};
-  static const int ShoulderID = 1, WristID = 2, HatchID = 3;
+  static const int ShoulderID = 1, WristID = 2, HatchID = 3, RollerID = 4;
   string _sb;
   int _loops = 0;
   bool _lastButton1 = false;
@@ -42,6 +42,7 @@ void Robot::RobotInit() {
   Shoulder = new WPI_TalonSRX(ShoulderID);
   Wrist = new WPI_TalonSRX(WristID);
   Hatch = new WPI_VictorSPX(HatchID);
+  Roller = new WPI_VictorSPX(RollerID);
 
   int absolutePosition = Shoulder->GetSelectedSensorPosition(0) & 0xFFF;
   Shoulder->SetSelectedSensorPosition(absolutePosition, kPIDLoopIdx,
@@ -131,8 +132,10 @@ DifferentialDrive m_robotDrive{m_leftLeadMotor, m_rightLeadMotor};
 void Robot::TeleopInit() {}
 
 double speedShoulder = 10;
+double hatchSpeed = 100;
 
 void Robot::TeleopPeriodic() {
+  double rollerSpeed = 10;
 
   double motorOutput = Shoulder->GetMotorOutputPercent();
 
@@ -151,7 +154,10 @@ void Robot::TeleopPeriodic() {
     buttonValueFour = m_stick.GetRawButtonPressed(4);
 
     bool buttonValueFive;
-    buttonValueFour = m_stick.GetRawButtonPressed(5);  
+    buttonValueFour = m_stick.GetRawButtonPressed(5); 
+
+    bool buttonValueSix;
+    buttonValueSix = m_stick.GetRawButtonPressed(6); 
 
     /*if(buttonValueOne == true){
       speedShoulder = speedShoulder;
@@ -197,10 +203,25 @@ void Robot::TeleopPeriodic() {
 			_sb.append(to_string(targetPositionRotationsW));
     }
 
+    if(buttonValueThree){
+      hatchSpeed = hatchSpeed;
+    }
 
+    else if(buttonValueFour){
+      hatchSpeed = -hatchSpeed;
+    }
+
+    if(buttonValueFive){
+      rollerSpeed = 100;
+    }
+    else if(buttonValueSix){
+      rollerSpeed = -100;
+    }
 
     Shoulder->Set(ControlMode::Position, targetPositionRotations);
     Wrist->Set(ControlMode::Position, targetPositionRotationsW);
+    Hatch->Set(ControlMode::PercentOutput, hatchSpeed);
+    Roller->Set(ControlMode::PercentOutput, rollerSpeed);
     
     m_robotDrive.ArcadeDrive(-m_stick.GetY(), -m_stick.GetX());
 

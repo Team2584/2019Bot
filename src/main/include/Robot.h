@@ -18,6 +18,7 @@ class Robot : public IterativeRobot {
   TalonSRX * Shoulder;
   TalonSRX * Wrist;
   VictorSPX * Hatch;
+  VictorSPX * Roller;
 
  public:
   void RobotInit() override;
