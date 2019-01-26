@@ -6,21 +6,14 @@
 /*----------------------------------------------------------------------------*/
 
 #pragma once
+
 #include <string>
-#include "ctre/phoenix.h"
+
 #include <frc/IterativeRobot.h>
 #include <frc/smartdashboard/SendableChooser.h>
-#include <PWMVictorSPX.h>
-#include <frc/WPILib.h>
-#include <DigitalInput.h>
-#include <DigitalSource.h>
 
 class Robot : public frc::IterativeRobot {
-    frc::DigitalInput* limitSwitch;
-    TalonSRX * TalonTest;
-    VictorSPX * VictorTest;
  public:
-
   void RobotInit() override;
   void RobotPeriodic() override;
   void AutonomousInit() override;
@@ -30,7 +23,6 @@ class Robot : public frc::IterativeRobot {
   void TestPeriodic() override;
 
  private:
-
   frc::SendableChooser<std::string> m_chooser;
   const std::string kAutoNameDefault = "Default";
   const std::string kAutoNameCustom = "My Auto";
