@@ -19,7 +19,7 @@
 #include <frc/DigitalInput.h>
 #include <frc/DigitalSource.h>
 #include "Constants.h"
-#include <Timer.h>
+#include <frc/Timer.h>
 
 
   static const int leftLeadDeviceID = 1, rightLeadDeviceID = 2, leftFollowDeviceID = 3, rightFollowDeviceID = 4;
@@ -27,16 +27,18 @@
   rev::CANSparkMax m_rightLeadMotor{rightLeadDeviceID, rev::CANSparkMax::MotorType::kBrushless};
   rev::CANSparkMax m_leftFollowMotor{leftFollowDeviceID, rev::CANSparkMax::MotorType::kBrushless};
   rev::CANSparkMax m_rightFollowMotor{rightFollowDeviceID, rev::CANSparkMax::MotorType::kBrushless};
-  static const int ShoulderID = 1;
+  static const int ShoulderID = 1, WristID = 2;
   std::string _sb;
   int _loops = 0;
   bool _lastButton1 = false;
   bool _lastButton2 = true;
 
   double targetPositionRotations;
+  double targetPositionRotationsW = 0;
 
 void Robot::RobotInit() {
   Shoulder = new WPI_TalonSRX(ShoulderID);
+  Wrist = new WPI_TalonSRX(WristID);
 
   int absolutePosition = Shoulder->GetSelectedSensorPosition(0) & 0xFFF;
   Shoulder->SetSelectedSensorPosition(absolutePosition, kPIDLoopIdx,
@@ -50,15 +52,34 @@ void Robot::RobotInit() {
 		Shoulder->ConfigPeakOutputForward(1, kTimeoutMs);
 		Shoulder->ConfigPeakOutputReverse(-1, kTimeoutMs); 
 
+  //These are the PID values
    Shoulder->Config_kF(kPIDLoopIdx, 0.0, kTimeoutMs);
 		Shoulder->Config_kP(kPIDLoopIdx, 0.1, kTimeoutMs);
 		Shoulder->Config_kI(kPIDLoopIdx, 0.0, kTimeoutMs);
 		Shoulder->Config_kD(kPIDLoopIdx, 0.0, kTimeoutMs);
 
+  int absolutePositionW = Wrist->GetSelectedSensorPosition(0) & 0xFFF;
+  Wrist->SetSelectedSensorPosition(absolutePositionW, kPIDLoopIdx,
+		kTimeoutMs);
+  Wrist->ConfigSelectedFeedbackSensor(
+	  FeedbackDevice::CTRE_MagEncoder_Relative, kPIDLoopIdx,
+	  kTimeoutMs);
+
+   Wrist->ConfigNominalOutputForward(0, kTimeoutMs);
+		Wrist->ConfigNominalOutputReverse(0, kTimeoutMs);
+		Wrist->ConfigPeakOutputForward(1, kTimeoutMs);
+		Wrist->ConfigPeakOutputReverse(-1, kTimeoutMs); 
+
+  //These are the PID values
+   Wrist->Config_kF(kPIDLoopIdx, 0.0, kTimeoutMs);
+		Wrist->Config_kP(kPIDLoopIdx, 0.1, kTimeoutMs);
+		Wrist->Config_kI(kPIDLoopIdx, 0.0, kTimeoutMs);
+		Wrist->Config_kD(kPIDLoopIdx, 0.0, kTimeoutMs);
+
 
   m_chooser.SetDefaultOption(kAutoNameDefault, kAutoNameDefault);
   m_chooser.AddOption(kAutoNameCustom, kAutoNameCustom);
-  frc::SmartDashboard::PutData("Auto Modes", &m_chooser);
+  SmartDashboard::PutData("Auto Modes", &m_chooser);
 }
 
 /**
@@ -102,15 +123,20 @@ void Robot::AutonomousPeriodic() {
     // Default Auto goes here
   }
 }
-frc::Joystick m_stick{3};
-frc::DifferentialDrive m_robotDrive{m_leftLeadMotor, m_rightLeadMotor};
+Joystick m_stick{3};
+DifferentialDrive m_robotDrive{m_leftLeadMotor, m_rightLeadMotor};
 void Robot::TeleopInit() {}
 
 double speedShoulder = 10;
 
+Timer(T1);
+start(T1);
+
 void Robot::TeleopPeriodic() {
 
   double motorOutput = Shoulder->GetMotorOutputPercent();
+
+  double motorOutputW = Wrist->GetMotorOutputPercent();
 
     bool buttonValueOne;
     buttonValueOne = m_stick.GetRawButtonPressed(1);
@@ -140,9 +166,14 @@ void Robot::TeleopPeriodic() {
 		_sb.append("\tpos:");
 		_sb.append(std::to_string(Shoulder->GetSelectedSensorPosition(kPIDLoopIdx)));
 
+    _sb.append("\tout:");
+		_sb.append(std::to_string(motorOutputW));
+		_sb.append("\tpos:");
+		_sb.append(std::to_string(Wrist->GetSelectedSensorPosition(kPIDLoopIdx)));  
+
     if (buttonValueOne && !_lastButton1) {
 			/* Position mode - button just pressed */
-      frc::Timer(push);
+      Timer(push);
 			targetPositionRotations = 10.0 * 4096; /* 10 Rotations in either direction */
 		}
 
@@ -158,9 +189,18 @@ void Robot::TeleopPeriodic() {
 			_sb.append(std::to_string(targetPositionRotations));
     }
 
+    if (Wrist->GetControlMode() == ControlMode::Position) {
+			/* append more signals to print when in speed mode. */
+			_sb.append("\terrNative:");
+			_sb.append(std::to_string(Wrist->GetClosedLoopError(kPIDLoopIdx)));
+			_sb.append("\ttrg:");
+			_sb.append(std::to_string(targetPositionRotationsW));
+    }
+
 
 
     Shoulder->Set(ControlMode::Position, targetPositionRotations);
+    Wrist->Set(ControlMode::Position, targetPositionRotationsW);
     
     m_robotDrive.ArcadeDrive(-m_stick.GetY(), -m_stick.GetX());
 
@@ -178,5 +218,5 @@ void Robot::TestPeriodic() {
 }
 
 #ifndef RUNNING_FRC_TESTS
-int main() { return frc::StartRobot<Robot>(); }
+int main() { return StartRobot<Robot>(); }
 #endif

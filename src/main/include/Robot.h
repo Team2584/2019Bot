@@ -14,6 +14,7 @@
 
 class Robot : public frc::IterativeRobot {
   TalonSRX * Shoulder;
+  TalonSRX * Wrist;
 
  public:
   void RobotInit() override;
