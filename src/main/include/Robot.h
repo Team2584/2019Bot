@@ -11,8 +11,10 @@
 #include "ctre/Phoenix.h"
 #include <frc/IterativeRobot.h>
 #include <frc/smartdashboard/SendableChooser.h>
+using namespace std;
+using namespace frc;
 
-class Robot : public frc::IterativeRobot {
+class Robot : public IterativeRobot {
   TalonSRX * Shoulder;
   TalonSRX * Wrist;
 
@@ -26,8 +28,8 @@ class Robot : public frc::IterativeRobot {
   void TestPeriodic() override;
 
  private:
-  frc::SendableChooser<std::string> m_chooser;
-  const std::string kAutoNameDefault = "Default";
-  const std::string kAutoNameCustom = "My Auto";
-  std::string m_autoSelected;
+  SendableChooser<string> m_chooser;
+  const string kAutoNameDefault = "Default";
+  const string kAutoNameCustom = "My Auto";
+  string m_autoSelected;
 };

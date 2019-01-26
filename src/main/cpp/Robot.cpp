@@ -10,7 +10,6 @@
 #include "ctre/Phoenix.h"
 #include <frc/encoder.h>
 #include <iostream>
-//#include <rev/SparkMax.h>
 #include <frc/SmartDashboard/SmartDashboard.h>
 #include <frc/drive/DifferentialDrive.h>
 #include "rev/CANSparkMax.h"
@@ -21,14 +20,17 @@
 #include "Constants.h"
 #include <frc/Timer.h>
 
+using namespace frc;
+using namespace std;
+using namespace rev;
 
   static const int leftLeadDeviceID = 1, rightLeadDeviceID = 2, leftFollowDeviceID = 3, rightFollowDeviceID = 4;
-  rev::CANSparkMax m_leftLeadMotor{leftLeadDeviceID, rev::CANSparkMax::MotorType::kBrushless};
-  rev::CANSparkMax m_rightLeadMotor{rightLeadDeviceID, rev::CANSparkMax::MotorType::kBrushless};
-  rev::CANSparkMax m_leftFollowMotor{leftFollowDeviceID, rev::CANSparkMax::MotorType::kBrushless};
-  rev::CANSparkMax m_rightFollowMotor{rightFollowDeviceID, rev::CANSparkMax::MotorType::kBrushless};
+  CANSparkMax m_leftLeadMotor{leftLeadDeviceID, CANSparkMax::MotorType::kBrushless};
+  CANSparkMax m_rightLeadMotor{rightLeadDeviceID, CANSparkMax::MotorType::kBrushless};
+  CANSparkMax m_leftFollowMotor{leftFollowDeviceID, CANSparkMax::MotorType::kBrushless};
+  CANSparkMax m_rightFollowMotor{rightFollowDeviceID, CANSparkMax::MotorType::kBrushless};
   static const int ShoulderID = 1, WristID = 2;
-  std::string _sb;
+  string _sb;
   int _loops = 0;
   bool _lastButton1 = false;
   bool _lastButton2 = true;
@@ -107,7 +109,7 @@ void Robot::AutonomousInit() {
   m_autoSelected = m_chooser.GetSelected();
   // m_autoSelected = SmartDashboard::GetString(
   //     "Auto Selector", kAutoNameDefault);
-  std::cout << "Auto selected: " << m_autoSelected << std::endl;
+  cout << "Auto selected: " << m_autoSelected << endl;
 
   if (m_autoSelected == kAutoNameCustom) {
     // Custom Auto goes here
@@ -128,9 +130,6 @@ DifferentialDrive m_robotDrive{m_leftLeadMotor, m_rightLeadMotor};
 void Robot::TeleopInit() {}
 
 double speedShoulder = 10;
-
-Timer(T1);
-start(T1);
 
 void Robot::TeleopPeriodic() {
 
@@ -162,14 +161,14 @@ void Robot::TeleopPeriodic() {
     }*/
 
     _sb.append("\tout:");
-		_sb.append(std::to_string(motorOutput));
+		_sb.append(to_string(motorOutput));
 		_sb.append("\tpos:");
-		_sb.append(std::to_string(Shoulder->GetSelectedSensorPosition(kPIDLoopIdx)));
+		_sb.append(to_string(Shoulder->GetSelectedSensorPosition(kPIDLoopIdx)));
 
     _sb.append("\tout:");
-		_sb.append(std::to_string(motorOutputW));
+		_sb.append(to_string(motorOutputW));
 		_sb.append("\tpos:");
-		_sb.append(std::to_string(Wrist->GetSelectedSensorPosition(kPIDLoopIdx)));  
+		_sb.append(to_string(Wrist->GetSelectedSensorPosition(kPIDLoopIdx)));  
 
     if (buttonValueOne && !_lastButton1) {
 			/* Position mode - button just pressed */
@@ -184,17 +183,17 @@ void Robot::TeleopPeriodic() {
     if (Shoulder->GetControlMode() == ControlMode::Position) {
 			/* append more signals to print when in speed mode. */
 			_sb.append("\terrNative:");
-			_sb.append(std::to_string(Shoulder->GetClosedLoopError(kPIDLoopIdx)));
+			_sb.append(to_string(Shoulder->GetClosedLoopError(kPIDLoopIdx)));
 			_sb.append("\ttrg:");
-			_sb.append(std::to_string(targetPositionRotations));
+			_sb.append(to_string(targetPositionRotations));
     }
 
     if (Wrist->GetControlMode() == ControlMode::Position) {
 			/* append more signals to print when in speed mode. */
 			_sb.append("\terrNative:");
-			_sb.append(std::to_string(Wrist->GetClosedLoopError(kPIDLoopIdx)));
+			_sb.append(to_string(Wrist->GetClosedLoopError(kPIDLoopIdx)));
 			_sb.append("\ttrg:");
-			_sb.append(std::to_string(targetPositionRotationsW));
+			_sb.append(to_string(targetPositionRotationsW));
     }
 
 
