@@ -19,6 +19,7 @@
 #include <frc/DigitalInput.h>
 #include <frc/DigitalSource.h>
 #include "Constants.h"
+#include <Timer.h>
 
 
   static const int leftLeadDeviceID = 1, rightLeadDeviceID = 2, leftFollowDeviceID = 3, rightFollowDeviceID = 4;
@@ -126,25 +127,26 @@ void Robot::TeleopPeriodic() {
     bool buttonValueFive;
     buttonValueFour = m_stick.GetRawButtonPressed(5);  
 
-    if(buttonValueOne == true){
+    /*if(buttonValueOne == true){
       speedShoulder = speedShoulder;
     }
 
     else if(buttonValueThree == true){
       speedShoulder = -speedShoulder;
-    }
+    }*/
 
     _sb.append("\tout:");
 		_sb.append(std::to_string(motorOutput));
 		_sb.append("\tpos:");
 		_sb.append(std::to_string(Shoulder->GetSelectedSensorPosition(kPIDLoopIdx)));
 
-    if (!_lastButton1 && buttonValueTwo) {
+    if (buttonValueOne && !_lastButton1) {
 			/* Position mode - button just pressed */
+      frc::Timer(push);
 			targetPositionRotations = 10.0 * 4096; /* 10 Rotations in either direction */
 		}
 
-    else if(!_lastButton2 && buttonValueFour){
+    else if(!_lastButton2 && buttonValueTwo){
       targetPositionRotations = 0 *4096;
     }
 
