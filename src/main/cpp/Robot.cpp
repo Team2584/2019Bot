@@ -18,7 +18,6 @@
 #include <frc/Solenoid.h>
 #include <frc/DigitalInput.h>
 #include <frc/DigitalSource.h>
-#include "Constants.h"
 #include <frc/Timer.h>
 
 
