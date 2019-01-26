@@ -8,16 +8,12 @@
 #pragma once
 
 #include <string>
-
+#include "ctre/Phoenix.h"
 #include <frc/IterativeRobot.h>
 #include <frc/smartdashboard/SendableChooser.h>
 
 class Robot : public frc::IterativeRobot {
-    TalonSRX * hatchMotor;
-    TalonSRX * platformLead;
-    VictorSPX * platformFollower;
-    VictorSPX * topRoller;
-    VictorSPX * crawlMotor;
+  TalonSRX * Shoulder;
 
  public:
   void RobotInit() override;
