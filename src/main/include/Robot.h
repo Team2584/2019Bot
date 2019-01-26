@@ -8,7 +8,8 @@
 #pragma once
 
 #include <string>
-
+#include <ctre/Phoenix.h>
+#include <frc/Talon.h>
 #include <frc/IterativeRobot.h>
 #include <frc/smartdashboard/SendableChooser.h>
 
@@ -22,7 +23,7 @@ class Robot : public frc::IterativeRobot {
   void TeleopPeriodic() override;
   void TestPeriodic() override;
 
-  VictorSPX * topRoller;
+VictorSPX * topRoller;
 TalonSRX * hatchMotor;
 TalonSRX * platformLead;
 VictorSPX * platformFollower;

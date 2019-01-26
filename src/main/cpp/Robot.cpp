@@ -31,11 +31,11 @@
 
 //#include "MotorSetup.h"
 
-VictorSPX * topRoller;
-TalonSRX * hatchMotor;
-TalonSRX * platformLead;
-VictorSPX * platformFollower;
-VictorSPX * crawlMotor;
+//VictorSPX * topRoller;
+//TalonSRX * hatchMotor;
+//TalonSRX * platformLead;
+//VictorSPX * platformFollower;
+//VictorSPX * crawlMotor;
 
 void Robot::RobotInit() {
   topRoller = new VictorSPX(1);
