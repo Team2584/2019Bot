@@ -29,7 +29,7 @@ using namespace rev;
   CANSparkMax m_rightLeadMotor{rightLeadDeviceID, CANSparkMax::MotorType::kBrushless};
   CANSparkMax m_leftFollowMotor{leftFollowDeviceID, CANSparkMax::MotorType::kBrushless};
   CANSparkMax m_rightFollowMotor{rightFollowDeviceID, CANSparkMax::MotorType::kBrushless};
-  static const int ShoulderID = 1, WristID = 2;
+  static const int ShoulderID = 1, WristID = 2, HatchID = 3;
   string _sb;
   int _loops = 0;
   bool _lastButton1 = false;
@@ -41,6 +41,7 @@ using namespace rev;
 void Robot::RobotInit() {
   Shoulder = new WPI_TalonSRX(ShoulderID);
   Wrist = new WPI_TalonSRX(WristID);
+  Hatch = new WPI_VictorSPX(HatchID);
 
   int absolutePosition = Shoulder->GetSelectedSensorPosition(0) & 0xFFF;
   Shoulder->SetSelectedSensorPosition(absolutePosition, kPIDLoopIdx,

@@ -17,6 +17,7 @@ using namespace frc;
 class Robot : public IterativeRobot {
   TalonSRX * Shoulder;
   TalonSRX * Wrist;
+  VictorSPX * Hatch;
 
  public:
   void RobotInit() override;
