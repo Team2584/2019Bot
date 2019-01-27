@@ -18,26 +18,48 @@
 #include <frc/Solenoid.h>
 #include <frc/DigitalInput.h>
 #include <frc/DigitalSource.h>
-#include "Constants.h"
 #include <frc/Timer.h>
-
+#include "RobotMap.h"
 Drive::Drive() : Subsystem("Drive") {
 
-  static const int leftLeadDeviceID = 1, rightLeadDeviceID = 2, leftFollowDeviceID = 3, rightFollowDeviceID = 4;
   CANSparkMax m_leftLeadMotor{leftLeadDeviceID, CANSparkMax::MotorType::kBrushless};
   CANSparkMax m_rightLeadMotor{rightLeadDeviceID, CANSparkMax::MotorType::kBrushless};
   CANSparkMax m_leftFollowMotor{leftFollowDeviceID, CANSparkMax::MotorType::kBrushless};
   CANSparkMax m_rightFollowMotor{rightFollowDeviceID, CANSparkMax::MotorType::kBrushless};
 
+  m_leftFollowMotor.Follow(m_leftLeadMotor);
+  m_rightFollowMotor.Follow(m_rightLeadMotor);
+
   Joystick m_stick{3};
   DifferentialDrive m_robotDrive{m_leftLeadMotor, m_rightLeadMotor};
 
+  
 }
 
 void Drive::InitDefaultCommand() {
   // Set the default command for a subsystem here.
   // SetDefaultCommand(new MySpecialCommand());
 }
+
+void Drive::Periodic(){
+    ArcadeDrive();
+    //TankDrive():
+    //CurvatureDrive();
+}
+
+void Drive::ArcadeDrive(){
+  m_robotDrive.ArcadeDrive(-m_stick.GetX(), -m_stick.GetY();)
+}
+
+void Drive::TankDrive(){
+  m_robotDrive.TankDrive(-m_stick.GetRawAxis(1), m_stick.GetRawAxis(4));
+}
+
+void Drive::CurvatureDrive(){
+  m_robotDrive.CurvatureDrive(-m_stick.GetRawAxis(1), m_stick.GetRawAxis(5), true);
+}
+
+
 
 // Put methods for controlling this subsystem
 // here. Call these from Commands.
