@@ -5,79 +5,32 @@
 /* the project.                                                               */
 /*----------------------------------------------------------------------------*/
 
+#include "Robot.h"
 #include "frc/WPILib.h"
 #include "Robot.h"
 #include "ctre/Phoenix.h"
 #include <frc/encoder.h>
 #include <iostream>
-//#include <rev/SparkMax.h>
 #include <frc/SmartDashboard/SmartDashboard.h>
 #include <frc/drive/DifferentialDrive.h>
 #include "rev/CANSparkMax.h"
+#include <frc/PWMVictorSPX.h>
 #include <frc/Solenoid.h>
+#include <frc/DigitalInput.h>
+#include <frc/DigitalSource.h>
+#include <frc/Timer.h>
 
 
-//constexpr double kPi = 3.14159265358979323846264338327950288419716939937510;
-  double kP = 0.1001, kI = 0.00001, kD = 0.5, kIz = 0, kFF = 0, kMaxOutput = 1, kMinOutput = -1;
-  static const int leftLeadDeviceID = 1, rightLeadDeviceID = 2, leftFollowDeviceID = 3, rightFollowDeviceID = 4;
-  rev::CANSparkMax m_leftLeadMotor{leftLeadDeviceID, rev::CANSparkMax::MotorType::kBrushless};
-  rev::CANSparkMax m_rightLeadMotor{rightLeadDeviceID, rev::CANSparkMax::MotorType::kBrushless};
-  rev::CANSparkMax m_leftFollowMotor{leftFollowDeviceID, rev::CANSparkMax::MotorType::kBrushless};
-  rev::CANSparkMax m_rightFollowMotor{rightFollowDeviceID, rev::CANSparkMax::MotorType::kBrushless};
-  //SETUP FOR PID MOTORS
-  static const int deviceID = 5;
-  static const int pidID = 6;
-  rev::CANSparkMax m_motor{deviceID, rev::CANSparkMax::MotorType::kBrushless};
-  rev::CANSparkMax m_slaveMotor{pidID, rev::CANSparkMax::MotorType::kBrushless};
-  //rev::CANSparkMax m_motorFollower{motorFollowerDeviceID, rev::CANSparkMax::MotorType::kBrushless};
-  rev::CANPIDController m_pidController = m_motor.GetPIDController();
-  rev::CANPIDController m_pidController2 = m_slaveMotor.GetPIDController();
-  rev::CANEncoder m_encoder = m_motor.GetEncoder();
-  //soleniod set up
-  static const int m_chanel = 1, mod_num = 3, pulsedur = 1;
-  frc::Solenoid solen{m_chanel};
+#include <frc/commands/Scheduler.h>
+#include <frc/smartdashboard/SmartDashboard.h>
 
-
-
-
+ExampleSubsystem Robot::m_subsystem;
+OI Robot::m_oi;
 
 void Robot::RobotInit() {
-  m_leftFollowMotor.Follow(m_leftLeadMotor);
-  m_rightFollowMotor.Follow(m_rightLeadMotor);
-
-    m_pidController.SetP(kP);
-    m_pidController.SetI(kI);
-    m_pidController.SetD(kD);
-    m_pidController.SetIZone(kIz);
-    m_pidController.SetFF(kFF);
-    m_pidController.SetOutputRange(kMinOutput, kMaxOutput);
-
-    m_pidController2.SetP(kP);
-    m_pidController2.SetI(kI);
-    m_pidController2.SetD(kD);
-    m_pidController2.SetIZone(kIz);
-    m_pidController2.SetFF(kFF);
-    m_pidController2.SetOutputRange(kMinOutput, kMaxOutput);
-      // set PID coefficients
-
-
-    // display PID coefficients on SmartDashboard
-    frc::SmartDashboard::PutNumber("P Gain", kP);
-    frc::SmartDashboard::PutNumber("I Gain", kI);
-    frc::SmartDashboard::PutNumber("D Gain", kD);
-    frc::SmartDashboard::PutNumber("I Zone", kIz);
-    frc::SmartDashboard::PutNumber("Feed Forward", kFF);
-    frc::SmartDashboard::PutNumber("Max Output", kMaxOutput);
-    frc::SmartDashboard::PutNumber("Min Output", kMinOutput);
-   // frc::SmartDashboard::PutNumber("Set Rotations", 0);
-  /*srx.Set(ControlMode::PercentOutput, 0);
-  m_encoder.SetDistancePerPulse(kPi * 6) /360.0);
-  m_chooser.SetDefaultOption(kAutoNameDefault, kAutoNameDefault);
-  m_chooser.AddOption(kAutoNameCustom, kAutoNameCustom);
-  frc::SmartDashboard::PutData("Auto Modes", &m_chooser);*/
-
-  // set up soleniod pulse 
-  solen.SetPulseDuration(pulsedur);
+  m_chooser.SetDefaultOption("Default Auto", &m_defaultAuto);
+  m_chooser.AddOption("My Auto", &m_myAuto);
+  frc::SmartDashboard::PutData("Auto Modes", &m_chooser);
 }
 
 /**
@@ -89,130 +42,59 @@ void Robot::RobotInit() {
  * LiveWindow and SmartDashboard integrated updating.
  */
 void Robot::RobotPeriodic() {}
+
+/**
+ * This function is called once each time the robot enters Disabled mode. You
+ * can use it to reset any subsystem information you want to clear when the
+ * robot is disabled.
+ */
+void Robot::DisabledInit() {}
+
+void Robot::DisabledPeriodic() { frc::Scheduler::GetInstance()->Run(); }
+
 /**
  * This autonomous (along with the chooser code above) shows how to select
  * between different autonomous modes using the dashboard. The sendable chooser
  * code works with the Java SmartDashboard. If you prefer the LabVIEW Dashboard,
- * remove all of the chooser code and uncomment the GetString line to get the
+ * remove all of the chooser code and uncomment the GetString code to get the
  * auto name from the text box below the Gyro.
  *
- * You can add additional auto modes by adding additional comparisons to the
- * if-else structure below with additional strings. If using the SendableChooser
- * make sure to add them to the chooser code above as well.
+ * You can add additional auto modes by adding additional commands to the
+ * chooser code above (like the commented example) or additional comparisons to
+ * the if-else structure below with additional strings & commands.
  */
 void Robot::AutonomousInit() {
-    m_autoSelected = m_chooser.GetSelected();
-  // m_autoSelected = SmartDashboard::GetString(
-  //     "Auto Selector", kAutoNameDefault);
-  std::cout << "Auto selected: " << m_autoSelected << std::endl;
+  // std::string autoSelected = frc::SmartDashboard::GetString(
+  //     "Auto Selector", "Default");
+  // if (autoSelected == "My Auto") {
+  //   m_autonomousCommand = &m_myAuto;
+  // } else {
+  //   m_autonomousCommand = &m_defaultAuto;
+  // }
 
-  if (m_autoSelected == kAutoNameCustom) {
-    // Custom Auto goes here
-  } else {
-    // Default Auto goes here
+  m_autonomousCommand = m_chooser.GetSelected();
+
+  if (m_autonomousCommand != nullptr) {
+    m_autonomousCommand->Start();
   }
 }
 
-void Robot::AutonomousPeriodic() {
-  if (m_autoSelected == kAutoNameCustom) {
-    // Custom Auto goes here
-  } else {
-    // Default Auto goes here
+void Robot::AutonomousPeriodic() { frc::Scheduler::GetInstance()->Run(); }
+
+void Robot::TeleopInit() {
+  // This makes sure that the autonomous stops running when
+  // teleop starts running. If you want the autonomous to
+  // continue until interrupted by another command, remove
+  // this line or comment it out.
+  if (m_autonomousCommand != nullptr) {
+    m_autonomousCommand->Cancel();
+    m_autonomousCommand = nullptr;
   }
 }
- 
-//TalonSRX srx = {0};
-frc::Joystick m_stick{3};
-frc::DifferentialDrive m_robotDrive{m_leftLeadMotor, m_rightLeadMotor};
 
-
-
-
-
-void Robot::TeleopInit() {}
-
-void Robot::TeleopPeriodic() {
-    // read PID coefficients from SmartDashboard
-    double p = frc::SmartDashboard::GetNumber("P Gain", 0);
-    double i = frc::SmartDashboard::GetNumber("I Gain", 0);
-    double d = frc::SmartDashboard::GetNumber("D Gain", 0);
-    double iz = frc::SmartDashboard::GetNumber("I Zone", 0);
-    double ff = frc::SmartDashboard::GetNumber("Feed Forward", 0);
-    double max = frc::SmartDashboard::GetNumber("Max Output", 0);
-    double min = frc::SmartDashboard::GetNumber("Min Output", 0);
-    //double rotations = frc::SmartDashboard::GetNumber("Set Rotations", 0);
-    //double btn;
-
-
-
-
-    double rotations;
-    //double rotations = frc::SmartDashboard::GetNumber("SetPoint", rotations);
-    bool buttonValueOne;
-    buttonValueOne = m_stick.GetRawButtonPressed(1);
-    bool buttonValueTwo;
-    buttonValueTwo = m_stick.GetRawButtonPressed(2);
-    bool buttonValueThree;
-    buttonValueThree = m_stick.GetRawButtonPressed(3);
-    if(buttonValueOne == true){
-     rotations = 8.68;
-    }
-    else if(buttonValueTwo == true){
-     rotations = 17.36;
-    }
-    else if(buttonValueThree == true){
-      rotations = 0;
-    }
-
-
-
-    // if PID coefficients on SmartDashboard have changed, write new values to controller
-    if((p != kP)) { m_pidController.SetP(p); kP = p; }
-    if((i != kI)) { m_pidController.SetI(i); kI = i; }
-    if((d != kD)) { m_pidController.SetD(d); kD = d; }
-    if((iz != kIz)) { m_pidController.SetIZone(iz); kIz = iz; }
-    if((ff != kFF)) { m_pidController.SetFF(ff); kFF = ff; }
-    if((max != kMaxOutput) || (min != kMinOutput)) { 
-      m_pidController.SetOutputRange(min, max); 
-      kMinOutput = min; kMaxOutput = max; }
-
-
-    if((p != kP)) { m_pidController2.SetP(p); kP = p; }
-    if((i != kI)) { m_pidController2.SetI(i); kI = i; }
-    if((d != kD)) { m_pidController2.SetD(d); kD = d; }
-    if((iz != kIz)) { m_pidController2.SetIZone(iz); kIz = iz; }
-    if((ff != kFF)) { m_pidController2.SetFF(ff); kFF = ff; }
-    if((max != kMaxOutput) || (min != kMinOutput)) { 
-      m_pidController2.SetOutputRange(min, max); 
-      kMinOutput = min; kMaxOutput = max; }
-    
-m_robotDrive.TankDrive(-m_stick.GetRawAxis(1), -m_stick.GetRawAxis(5));
-//m_robotDrive.ArcadeDrive(-m_stick.GetRawAxis(0), -m_stick.GetRawAxis(5);)
-m_pidController.SetReference(rotations, rev::ControlType::kPosition);
-m_pidController2.SetReference(rotations, rev::ControlType::kPosition);
-
-//frc::SmartDashboard::PutNumber("SetPoint", rotations);
-    frc::SmartDashboard::PutNumber("ProcessVariable", m_encoder.GetPosition());
- 
-  //start pulse
-  solen.StartPulse();
-  //single soleniod trigger
-  bool buttonValueSix;
-  
-  buttonValuefour = m_stick.GetRawButton(6);
-  if(buttonValueSix == true){
-    solen.Set(1);
-  }
-  else{
-    solen.Set(0);
-  }
-  
-};
+void Robot::TeleopPeriodic() { frc::Scheduler::GetInstance()->Run(); }
 
 void Robot::TestPeriodic() {}
-
-
-//void Robot::TestPeriodic() {}
 
 #ifndef RUNNING_FRC_TESTS
 int main() { return frc::StartRobot<Robot>(); }
