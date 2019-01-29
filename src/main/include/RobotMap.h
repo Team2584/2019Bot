@@ -6,6 +6,7 @@
 /*----------------------------------------------------------------------------*/
 #ifndef RobotMap_H
 #define RobotMap_H
+#include <frc/TimedRobot.h>
 #pragma once
 
 class RobotMap : public frc::TimedRobot{

@@ -18,19 +18,14 @@
 #include <frc/Solenoid.h>
 #include <frc/DigitalInput.h>
 #include <frc/DigitalSource.h>
-#include "Constants.h"
 #include <frc/Timer.h>
+
 
 #include <frc/commands/Scheduler.h>
 #include <frc/smartdashboard/SmartDashboard.h>
 
 ExampleSubsystem Robot::m_subsystem;
 OI Robot::m_oi;
-std::shared_ptr<Drive> pDrive;
-
-Robot::Robot(){
-  pDrive.reset(new Drive());
-}
 
 void Robot::RobotInit() {
   m_chooser.SetDefaultOption("Default Auto", &m_defaultAuto);
@@ -97,9 +92,7 @@ void Robot::TeleopInit() {
   }
 }
 
-void Robot::TeleopPeriodic() { 
-  frc::Scheduler::GetInstance()->Run(); 
-  }
+void Robot::TeleopPeriodic() { frc::Scheduler::GetInstance()->Run(); }
 
 void Robot::TestPeriodic() {}
 
