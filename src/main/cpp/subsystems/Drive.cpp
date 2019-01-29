@@ -14,12 +14,14 @@
 #include <frc/SmartDashboard/SmartDashboard.h>
 #include <frc/drive/DifferentialDrive.h>
 #include "rev/CANSparkMax.h"
+#include <rev/CANPIDController.h>
 #include <frc/PWMVictorSPX.h>
 #include <frc/Solenoid.h>
 #include <frc/DigitalInput.h>
 #include <frc/DigitalSource.h>
 #include <frc/Timer.h>
 #include "RobotMap.h"
+#include "subsystems/Drive.h"
 Drive::Drive() : Subsystem("Drive") {
 
   CANSparkMax m_leftLeadMotor{leftLeadDeviceID, CANSparkMax::MotorType::kBrushless};
