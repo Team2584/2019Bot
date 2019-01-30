@@ -22,6 +22,7 @@
 #include <frc/Timer.h>
 #include "RobotMap.h"
 #include "subsystems/Drive.h"
+#include "OI.h"
 Drive::Drive() : Subsystem("Drive") {
 
   CANSparkMax m_leftLeadMotor{leftLeadDeviceID, CANSparkMax::MotorType::kBrushless};

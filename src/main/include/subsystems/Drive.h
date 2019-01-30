@@ -8,7 +8,9 @@
 #pragma once
 
 #include <frc/commands/Subsystem.h>
-
+#include <frc/Spark.h>
+#include <frc/SpeedControllerGroup.h>
+using namespace frc;
 class Drive : public frc::Subsystem {
  private:
   // It's desirable that everything possible under private except
@@ -17,4 +19,6 @@ class Drive : public frc::Subsystem {
  public:
   Drive();
   void InitDefaultCommand() override;
+
+  SpeedControllerGroup* speedController = new SpeedController();
 };
