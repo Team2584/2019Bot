@@ -19,6 +19,13 @@ class Drive : public frc::Subsystem {
  public:
   Drive();
   void InitDefaultCommand() override;
+  void Periodic() override;
+  void ArcadeDrive() override;
+  void TankDrive() override;
+  
+
+
+
 
   SpeedControllerGroup* speedController = new SpeedController();
 };
