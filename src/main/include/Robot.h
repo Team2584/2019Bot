@@ -7,7 +7,7 @@
 
 #pragma once
 #include <string>
-#include "ctre/phoenix.h"
+#include "ctre/Phoenix.h"
 #include <frc/IterativeRobot.h>
 #include <frc/smartdashboard/SendableChooser.h>
 #include <PWMVictorSPX.h>
@@ -19,6 +19,8 @@ class Robot : public frc::IterativeRobot {
     frc::DigitalInput* limitSwitch;
     TalonSRX * TalonTest;
     VictorSPX * VictorTest;
+    PigeonIMU * _pidgey;
+
  public:
 
   void RobotInit() override;

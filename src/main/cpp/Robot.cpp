@@ -19,13 +19,16 @@
 #include <DigitalInput.h>
 #include <DigitalSource.h>
 
+
 //constexpr double kPi = 3.14159265358979323846264338327950288419716939937510;
   double kP = 0.1001, kI = 0.00001, kD = 0.5, kIz = 0, kFF = 0, kMaxOutput = 1, kMinOutput = -1;
   static const int leftLeadDeviceID = 1, rightLeadDeviceID = 2, leftFollowDeviceID = 3, rightFollowDeviceID = 4;
+  static const int wristID = 2;
   rev::CANSparkMax m_leftLeadMotor{leftLeadDeviceID, rev::CANSparkMax::MotorType::kBrushless};
   rev::CANSparkMax m_rightLeadMotor{rightLeadDeviceID, rev::CANSparkMax::MotorType::kBrushless};
   rev::CANSparkMax m_leftFollowMotor{leftFollowDeviceID, rev::CANSparkMax::MotorType::kBrushless};
   rev::CANSparkMax m_rightFollowMotor{rightFollowDeviceID, rev::CANSparkMax::MotorType::kBrushless};
+  
   //SETUP FOR PID MOTORS
   static const int deviceID = 5;
   static const int pidID = 6;
@@ -44,6 +47,8 @@
 void Robot::RobotInit() {
   TalonTest = new TalonSRX(3);
   VictorTest = new VictorSPX(4);
+ //Setting up the Pigeon
+  _pidgey = new PigeonIMU(TalonTest);
   m_leftFollowMotor.Follow(m_leftLeadMotor);
   //m_rightFollowMotor.Follow(m_rightLeadMotor);
   limitSwitch = new frc::DigitalInput(1);
@@ -210,6 +215,12 @@ VictorTest->Set(ControlMode::PercentOutput, speedV);
   while(limitSwitch->Get() == true){
     speedT = 10;
   }
+  
+//Pigeon feedback loop
+double YPR[3];
+ _pidgey->GetYawPitchRoll(YPR);
+ int roll = YPR[2];
+ frc::SmartDashboard::PutNumber("roll", roll);
   
 };
 
