@@ -23,7 +23,7 @@
 //constexpr double kPi = 3.14159265358979323846264338327950288419716939937510;
   double kP = 0.1001, kI = 0.00001, kD = 0.5, kIz = 0, kFF = 0, kMaxOutput = 1, kMinOutput = -1;
   static const int leftLeadDeviceID = 1, rightLeadDeviceID = 2, leftFollowDeviceID = 3, rightFollowDeviceID = 4;
-  static const int wristID = 2;
+  static const int wristID = 6;
   rev::CANSparkMax m_leftLeadMotor{leftLeadDeviceID, rev::CANSparkMax::MotorType::kBrushless};
   rev::CANSparkMax m_rightLeadMotor{rightLeadDeviceID, rev::CANSparkMax::MotorType::kBrushless};
   rev::CANSparkMax m_leftFollowMotor{leftFollowDeviceID, rev::CANSparkMax::MotorType::kBrushless};
@@ -47,8 +47,10 @@
 void Robot::RobotInit() {
   TalonTest = new TalonSRX(3);
   VictorTest = new VictorSPX(4);
+  WristTest = new TalonSRX(wristID);
+  _mstick = new frc::Joystick(0);
  //Setting up the Pigeon
-  _pidgey = new PigeonIMU(TalonTest);
+  _pidgey = new PigeonIMU(WristTest);
   m_leftFollowMotor.Follow(m_leftLeadMotor);
   //m_rightFollowMotor.Follow(m_rightLeadMotor);
   limitSwitch = new frc::DigitalInput(1);
@@ -221,6 +223,9 @@ double YPR[3];
  _pidgey->GetYawPitchRoll(YPR);
  int roll = YPR[2];
  frc::SmartDashboard::PutNumber("roll", roll);
+
+ double speed = _mstick->GetRawAxis(5);
+ WristTest->Set(ControlMode::PercentOutput, -speed);
   
 };
 
