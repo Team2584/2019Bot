@@ -20,6 +20,8 @@ class Robot : public frc::IterativeRobot {
     TalonSRX * TalonTest;
     VictorSPX * VictorTest;
     PigeonIMU * _pidgey;
+    TalonSRX * WristTest;
+    frc::Joystick * _mstick;
 
  public:
 

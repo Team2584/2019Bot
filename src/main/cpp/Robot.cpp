@@ -226,7 +226,17 @@ double YPR[3];
 
  double speed = _mstick->GetRawAxis(5);
  WristTest->Set(ControlMode::PercentOutput, -speed);
-  
+
+ if(roll<0){
+ WristTest->Set(ControlMode::PercentOutput, 0.1);
+ };
+ if(roll>0){
+WristTest->Set(ControlMode::PercentOutput, -0.1);
+ };
+ if(roll=0){
+WristTest->Set(ControlMode::PercentOutput, 0);
+ }
+ 
 };
 
 void Robot::TestPeriodic() {}
