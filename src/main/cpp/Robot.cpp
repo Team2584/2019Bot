@@ -17,9 +17,14 @@
 #include <memory>
 #include <chrono>
 #include <thread>
+#include <opencv2/imgproc/imgproc.hpp>
+#include <opencv2/core/core.hpp>
+
+using namespace frc;
+using namespace std;
 
 static const int ShoulderID = 1, WristID = 5;
-std::string _sb;
+string _sb;
 int _loops = 0;
 
 double targetPositionRotationsS = 0;
@@ -28,8 +33,18 @@ double targetPositionRotationsW = 0;
 double absolutePositionS = 0;
 double absolutePositionW = 0;
 
+static void VisionThread()
+    {
+        cs::UsbCamera camera = CameraServer::GetInstance()->StartAutomaticCapture();
+        camera.SetResolution(280, 200);
+    }
+
 void Robot::RobotInit() {
-  std::stringstream _work;
+  //CameraServer::GetInstance()->StartAutomaticCapture();
+  std::thread visionThread(VisionThread);
+  visionThread.detach();
+  /*cs::UsbCamera camera = CameraServer::GetInstance()->StartAutomaticCapture();
+  camera.SetResolution(640, 480);*/
   const bool kInvert = false;
   const bool kSensorPhase = false;
   Shoulder = new WPI_TalonSRX(ShoulderID);
@@ -40,7 +55,7 @@ void Robot::RobotInit() {
   Shoulder->SetStatusFramePeriod(StatusFrame::Status_1_General_, 5, kTimeoutMs);
   Shoulder->SetSensorPhase(kSensorPhase);
   Shoulder->SetInverted(kInvert);
-  frc::SmartDashboard::PutData("Auto Modes", &m_chooser);
+  SmartDashboard::PutData("Auto Modes", &m_chooser);
 
   absolutePositionS = Shoulder->GetSelectedSensorPosition(0) & 0xFFF;
   Shoulder->SetSelectedSensorPosition(absolutePositionS, kPIDLoopIdx,
@@ -104,7 +119,7 @@ void Robot::AutonomousInit() {
   m_autoSelected = m_chooser.GetSelected();
   // m_autoSelected = SmartDashboard::GetString(
   //     "Auto Selector", kAutoNameDefault);
-  std::cout << "Auto selected: " << m_autoSelected << std::endl;
+  cout << "Auto selected: " << m_autoSelected << endl;
 
   if (m_autoSelected == kAutoNameCustom) {
     // Custom Auto goes here
@@ -121,7 +136,7 @@ void Robot::AutonomousPeriodic() {
   }
 }
 
-frc::Joystick m_stick{3};
+Joystick m_stick{3};
 
 void Robot::TeleopInit() {}
 
@@ -147,9 +162,9 @@ void Robot::TeleopPeriodic() {
   bool buttonValueFive;
     buttonValueFive = m_stick.GetRawButtonPressed(5);
 
-    frc::SmartDashboard::PutNumber("TargetS", targetPositionRotationsS);
-    frc::SmartDashboard::PutNumber("TargetW", targetPositionRotationsW);
-    frc::SmartDashboard::PutNumber("Shoulder Encoder", Shoulder->GetSelectedSensorPosition());
+    SmartDashboard::PutNumber("TargetS", targetPositionRotationsS);
+    SmartDashboard::PutNumber("TargetW", targetPositionRotationsW);
+    SmartDashboard::PutNumber("Shoulder Encoder", Shoulder->GetSelectedSensorPosition());
 
   if (buttonValueFour /*&& !lastButtonPressed4*/) {
 			/* Position mode - button just pressed */
@@ -161,8 +176,8 @@ void Robot::TeleopPeriodic() {
     }
   
   else if(buttonValueFive){
-    targetPositionRotationsS = 100 * 4096;
-    targetPositionRotationsW = 180 * 4096;
+    targetPositionRotationsS = 85 * 4096;
+    targetPositionRotationsW = 45 * 4096;
   }
 
   if (buttonValueTwo /*&& !lastButtonPressed2*/) {
@@ -187,5 +202,5 @@ void Robot::TeleopPeriodic() {
 void Robot::TestPeriodic() {}
 
 #ifndef RUNNING_FRC_TESTS
-int main() { return frc::StartRobot<Robot>(); }
+int main() { return StartRobot<Robot>(); }
 #endif
