@@ -5,75 +5,76 @@
 /* the project.                                                               */
 /*----------------------------------------------------------------------------*/
 
-#include "frc/WPILib.h"
 #include "Robot.h"
 #include "ctre/Phoenix.h"
-#include <frc/encoder.h>
 #include <iostream>
-//#include <rev/SparkMax.h>
-#include <frc/SmartDashboard/SmartDashboard.h>
-#include <frc/drive/DifferentialDrive.h>
-#include "rev/CANSparkMax.h"
-#include <PWMVictorSPX.h>
-#include <frc/Solenoid.h>
-#include <DigitalInput.h>
-#include <DigitalSource.h>
+#include <frc/encoder.h>
+#include <frc/smartdashboard/SmartDashboard.h>
+#include <frc/DigitalInput.h>
+#include <frc/DigitalSource.h>
+#include "Constants.h"
+#include "frc/WPILib.h"
+#include <memory>
+#include <chrono>
+#include <thread>
 
-//constexpr double kPi = 3.14159265358979323846264338327950288419716939937510;
-  double kP = 0.1001, kI = 0.00001, kD = 0.5, kIz = 0, kFF = 0, kMaxOutput = 1, kMinOutput = -1;
-  static const int leftLeadDeviceID = 1, rightLeadDeviceID = 2, leftFollowDeviceID = 3, rightFollowDeviceID = 4;
-  rev::CANSparkMax m_leftLeadMotor{leftLeadDeviceID, rev::CANSparkMax::MotorType::kBrushless};
-  rev::CANSparkMax m_rightLeadMotor{rightLeadDeviceID, rev::CANSparkMax::MotorType::kBrushless};
-  rev::CANSparkMax m_leftFollowMotor{leftFollowDeviceID, rev::CANSparkMax::MotorType::kBrushless};
-  rev::CANSparkMax m_rightFollowMotor{rightFollowDeviceID, rev::CANSparkMax::MotorType::kBrushless};
-  //SETUP FOR PID MOTORS
-  static const int deviceID = 5;
-  static const int pidID = 6;
-  rev::CANSparkMax m_motor{deviceID, rev::CANSparkMax::MotorType::kBrushless};
-  rev::CANSparkMax m_slaveMotor{pidID, rev::CANSparkMax::MotorType::kBrushless};
-  //rev::CANSparkMax m_motorFollower{motorFollowerDeviceID, rev::CANSparkMax::MotorType::kBrushless};
-  rev::CANPIDController m_pidController = m_motor.GetPIDController();
-  rev::CANPIDController m_pidController2 = m_slaveMotor.GetPIDController();
-  rev::CANEncoder m_encoder = m_motor.GetEncoder();
-  double encoderPos = m_encoder.GetPosition();
-  double encoderVel = m_encoder.GetVelocity();
-  //soleniod set up
-  //static const int m_chanel = 1, mod_num = 3, pulsedur = 1;
-  //frc::Solenoid solen{m_chanel};
+static const int ShoulderID = 1, WristID = 5;
+std::string _sb;
+int _loops = 0;
+
+double targetPositionRotationsS = 0;
+double targetPositionRotationsW = 0;
+
+double absolutePositionS = 0;
+double absolutePositionW = 0;
 
 void Robot::RobotInit() {
-  TalonTest = new TalonSRX(3);
-  VictorTest = new VictorSPX(4);
-  m_leftFollowMotor.Follow(m_leftLeadMotor);
-  //m_rightFollowMotor.Follow(m_rightLeadMotor);
-  limitSwitch = new frc::DigitalInput(1);
-  // set PID coefficients
-  m_pidController.SetP(kP);
-  m_pidController.SetI(kI);
-  m_pidController.SetD(kD);
-  m_pidController.SetIZone(kIz);
-  m_pidController.SetFF(kFF);
-  m_pidController.SetOutputRange(kMinOutput, kMaxOutput);
+  std::stringstream _work;
+  const bool kInvert = false;
+  const bool kSensorPhase = false;
+  Shoulder = new WPI_TalonSRX(ShoulderID);
+  Wrist = new WPI_TalonSRX(WristID);
+  m_chooser.SetDefaultOption(kAutoNameDefault, kAutoNameDefault);
+  m_chooser.AddOption(kAutoNameCustom, kAutoNameCustom);
+  Shoulder->ConfigSelectedFeedbackSensor(FeedbackDevice::CTRE_MagEncoder_Relative, 0, kTimeoutMs);
+  Shoulder->SetStatusFramePeriod(StatusFrame::Status_1_General_, 5, kTimeoutMs);
+  Shoulder->SetSensorPhase(kSensorPhase);
+  Shoulder->SetInverted(kInvert);
+  frc::SmartDashboard::PutData("Auto Modes", &m_chooser);
 
-  m_pidController2.SetP(kP);
-  m_pidController2.SetI(kI);
-  m_pidController2.SetD(kD);
-  m_pidController2.SetIZone(kIz);
-  m_pidController2.SetFF(kFF);
-  m_pidController2.SetOutputRange(kMinOutput, kMaxOutput);
+  absolutePositionS = Shoulder->GetSelectedSensorPosition(0) & 0xFFF;
+  Shoulder->SetSelectedSensorPosition(absolutePositionS, kPIDLoopIdx,
+		kTimeoutMs);
+  Shoulder->ConfigSelectedFeedbackSensor(
+	  FeedbackDevice::CTRE_MagEncoder_Relative, kPIDLoopIdx,
+	  kTimeoutMs);
 
-  // display PID coefficients on SmartDashboard
-  frc::SmartDashboard::PutNumber("P Gain", kP);
-  frc::SmartDashboard::PutNumber("I Gain", kI);
-  frc::SmartDashboard::PutNumber("D Gain", kD);
-  frc::SmartDashboard::PutNumber("I Zone", kIz);
-  frc::SmartDashboard::PutNumber("Feed Forward", kFF);
-  frc::SmartDashboard::PutNumber("Max Output", kMaxOutput);
-  frc::SmartDashboard::PutNumber("Min Output", kMinOutput);
-  frc::SmartDashboard::PutNumber("Encoder Position", encoderPos);
-  frc::SmartDashboard::PutNumber("Encoder Velocity", encoderVel);
-  // set up soleniod pulse 
-  //solen.SetPulseDuration(pulsedur);
+    Shoulder->ConfigNominalOutputForward(0, kTimeoutMs);
+	  Shoulder->ConfigNominalOutputReverse(0, kTimeoutMs);
+  	Shoulder->ConfigPeakOutputForward(0.5, kTimeoutMs);
+		Shoulder->ConfigPeakOutputReverse(-0.5, kTimeoutMs); 
+
+    Shoulder->Config_kF(kPIDLoopIdx, 0.0, kTimeoutMs);
+		Shoulder->Config_kP(kPIDLoopIdx, 0.75, kTimeoutMs);
+		Shoulder->Config_kI(kPIDLoopIdx, 0.0, kTimeoutMs);
+		Shoulder->Config_kD(kPIDLoopIdx, 0.0, kTimeoutMs);
+
+    int absolutePositionW = Wrist->GetSelectedSensorPosition(0) & 0xFFF;
+  Wrist->SetSelectedSensorPosition(absolutePositionW, kPIDLoopIdx,
+		kTimeoutMs);
+  Wrist->ConfigSelectedFeedbackSensor(
+	  FeedbackDevice::CTRE_MagEncoder_Relative, kPIDLoopIdx,
+	  kTimeoutMs);
+
+   Wrist->ConfigNominalOutputForward(0, kTimeoutMs);
+		Wrist->ConfigNominalOutputReverse(0, kTimeoutMs);
+		Wrist->ConfigPeakOutputForward(0.5, kTimeoutMs);
+		Wrist->ConfigPeakOutputReverse(-0.5, kTimeoutMs); 
+
+   Wrist->Config_kF(kPIDLoopIdx, 0.0, kTimeoutMs);
+		Wrist->Config_kP(kPIDLoopIdx, 0.1, kTimeoutMs);
+		Wrist->Config_kI(kPIDLoopIdx, 0.0, kTimeoutMs);
+		Wrist->Config_kD(kPIDLoopIdx, 0.0, kTimeoutMs);
 }
 
 /**
@@ -84,7 +85,10 @@ void Robot::RobotInit() {
  * <p> This runs after the mode specific periodic functions, but before
  * LiveWindow and SmartDashboard integrated updating.
  */
+
+
 void Robot::RobotPeriodic() {}
+
 /**
  * This autonomous (along with the chooser code above) shows how to select
  * between different autonomous modes using the dashboard. The sendable chooser
@@ -97,7 +101,7 @@ void Robot::RobotPeriodic() {}
  * make sure to add them to the chooser code above as well.
  */
 void Robot::AutonomousInit() {
-    m_autoSelected = m_chooser.GetSelected();
+  m_autoSelected = m_chooser.GetSelected();
   // m_autoSelected = SmartDashboard::GetString(
   //     "Auto Selector", kAutoNameDefault);
   std::cout << "Auto selected: " << m_autoSelected << std::endl;
@@ -116,105 +120,71 @@ void Robot::AutonomousPeriodic() {
     // Default Auto goes here
   }
 }
- 
-//TalonSRX srx = {0};
+
 frc::Joystick m_stick{3};
-//frc::DifferentialDrive m_robotDrive{m_leftLeadMotor, m_rightLeadMotor};
 
 void Robot::TeleopInit() {}
 
+double lastButtonPressed4 = false;
+double lastButtonPressed1 = true;
+double lastButtonPressed2 = false;
+double lastButtonPressed3 = true;
+
 void Robot::TeleopPeriodic() {
-    // read PID coefficients from SmartDashboard
-    double p = frc::SmartDashboard::GetNumber("P Gain", 0);
-    double i = frc::SmartDashboard::GetNumber("I Gain", 0);
-    double d = frc::SmartDashboard::GetNumber("D Gain", 0);
-    double iz = frc::SmartDashboard::GetNumber("I Zone", 0);
-    double ff = frc::SmartDashboard::GetNumber("Feed Forward", 0);
-    double max = frc::SmartDashboard::GetNumber("Max Output", 0);
-    double min = frc::SmartDashboard::GetNumber("Min Output", 0);
-    //double rotations = frc::SmartDashboard::GetNumber("Set Rotations", 0);
-    //double btn;
 
-    double speedT;
-    double speedV;
-    double rotations;
-    //double rotations = frc::SmartDashboard::GetNumber("SetPoint", rotations);
-    bool buttonValueOne;
+  bool buttonValueOne;
     buttonValueOne = m_stick.GetRawButtonPressed(1);
-    bool buttonValueTwo;
+
+  bool buttonValueTwo;
     buttonValueTwo = m_stick.GetRawButtonPressed(2);
-    bool buttonValueThree;
+
+  bool buttonValueThree;
     buttonValueThree = m_stick.GetRawButtonPressed(3);
-    bool buttonValueFour;
+
+  bool buttonValueFour;
     buttonValueFour = m_stick.GetRawButtonPressed(4);
-    bool buttonValueFive;
-    buttonValueFour = m_stick.GetRawButtonPressed(5);
-    if(buttonValueOne == true){
-     rotations = 8.68;
-    }
-    else if(buttonValueTwo == true){
-     rotations = 17.36;
-    }
-    else if(buttonValueThree == true){
-      rotations = 0;
-    }
-    else if(buttonValueFour == true){
-      speedT = 100;
-    }
-    else if(buttonValueFive == true){
-      speedV = 100;
-    }
 
-    // if PID coefficients on SmartDashboard have changed, write new values to controller
-    if((p != kP)) { m_pidController.SetP(p); kP = p; }
-    if((i != kI)) { m_pidController.SetI(i); kI = i; }
-    if((d != kD)) { m_pidController.SetD(d); kD = d; }
-    if((iz != kIz)) { m_pidController.SetIZone(iz); kIz = iz; }
-    if((ff != kFF)) { m_pidController.SetFF(ff); kFF = ff; }
-    if((max != kMaxOutput) || (min != kMinOutput)) { 
-      m_pidController.SetOutputRange(min, max); 
-      kMinOutput = min; kMaxOutput = max; }
+  bool buttonValueFive;
+    buttonValueFive = m_stick.GetRawButtonPressed(5);
 
+    frc::SmartDashboard::PutNumber("TargetS", targetPositionRotationsS);
+    frc::SmartDashboard::PutNumber("TargetW", targetPositionRotationsW);
+    frc::SmartDashboard::PutNumber("Shoulder Encoder", Shoulder->GetSelectedSensorPosition());
 
-    if((p != kP)) { m_pidController2.SetP(p); kP = p; }
-    if((i != kI)) { m_pidController2.SetI(i); kI = i; }
-    if((d != kD)) { m_pidController2.SetD(d); kD = d; }
-    if((iz != kIz)) { m_pidController2.SetIZone(iz); kIz = iz; }
-    if((ff != kFF)) { m_pidController2.SetFF(ff); kFF = ff; }
-    if((max != kMaxOutput) || (min != kMinOutput)) { 
-      m_pidController2.SetOutputRange(min, max); 
-      kMinOutput = min; kMaxOutput = max; }
-    
-//m_robotDrive.TankDrive(-m_stick.GetRawAxis(1), -m_stick.GetRawAxis(5));
-//m_robotDrive.ArcadeDrive(-m_stick.GetRawAxis(0), -m_stick.GetRawAxis(5);)
-m_pidController.SetReference(rotations, rev::ControlType::kPosition);
-m_pidController2.SetReference(rotations, rev::ControlType::kPosition);
-TalonTest->Set(ControlMode::PercentOutput, speedT);
-VictorTest->Set(ControlMode::PercentOutput, speedV);
+  if (buttonValueFour /*&& !lastButtonPressed4*/) {
+			/* Position mode - button just pressed */
+			targetPositionRotationsS = 25.0 * 4096; /* 10 Rotations in either direction */
+		}
 
-
-//frc::SmartDashboard::PutNumber("SetPoint", rotations);
-    frc::SmartDashboard::PutNumber("ProcessVariable", m_encoder.GetPosition());
- 
-  //start pulse
-  //solen.StartPulse();
-  //single soleniod trigger
-  bool buttonValueSix;
-  buttonValueSix = m_stick.GetRawButton(6);
-  /*if(buttonValueSix == true){
-    solen.Set(1);
-  }
-  else{
-    solen.Set(0);
-  }*/
-  while(limitSwitch->Get() == true){
-    speedT = 10;
-  }
+  else if(/*!lastButtonPressed1 &&*/ buttonValueOne){
+      targetPositionRotationsS = 7.5 *4096;
+    }
   
-};
+  else if(buttonValueFive){
+    targetPositionRotationsS = 100 * 4096;
+    targetPositionRotationsW = 180 * 4096;
+  }
+
+  if (buttonValueTwo /*&& !lastButtonPressed2*/) {
+			/* Position mode - button just pressed */
+			targetPositionRotationsW = 180.0 * 4096; /* 10 Rotations in either direction */
+		}
+
+  else if(/*!lastButtonPressed3 &&*/ buttonValueThree){
+      targetPositionRotationsW = 0 *4096;
+    }
+
+    Wrist->Set(ControlMode::Position, targetPositionRotationsW);
+    Shoulder->Set(ControlMode::Position, targetPositionRotationsS);
+
+    double lastButtonPressed4 = buttonValueFour;
+    double lastButtonPressed1 = buttonValueOne;
+    double lastButtonPressed2 = buttonValueTwo;
+    double lastButtonPressed3 = buttonValueThree;
+
+}
 
 void Robot::TestPeriodic() {}
-
 
 #ifndef RUNNING_FRC_TESTS
 int main() { return frc::StartRobot<Robot>(); }
