@@ -15,6 +15,10 @@
 class Robot : public frc::IterativeRobot {
   TalonSRX * Shoulder;
   TalonSRX * Wrist;
+  TalonSRX * ClimbLead;
+  TalonSRX * Hatch;
+  VictorSPX * ClimbFollow;
+  VictorSPX * Roller;
  public:
   void RobotInit() override;
   void RobotPeriodic() override;

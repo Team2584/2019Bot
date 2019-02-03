@@ -23,7 +23,7 @@
 using namespace frc;
 using namespace std;
 
-static const int ShoulderID = 1, WristID = 5;
+static const int ShoulderID = 1, WristID = 5, LeadID = 3, FollowID = 4, HatchID = 7, RollerID = 6;
 string _sb;
 int _loops = 0;
 
@@ -47,14 +47,23 @@ void Robot::RobotInit() {
   camera.SetResolution(640, 480);*/
   const bool kInvert = false;
   const bool kSensorPhase = false;
+
   Shoulder = new WPI_TalonSRX(ShoulderID);
   Wrist = new WPI_TalonSRX(WristID);
+  Hatch = new WPI_TalonSRX(HatchID);
+  ClimbLead = new WPI_TalonSRX(LeadID);
+  ClimbFollow = new WPI_VictorSPX(FollowID);
+  Roller = new WPI_VictorSPX(RollerID);
+  ClimbFollow->Follow(*ClimbLead);
+
   m_chooser.SetDefaultOption(kAutoNameDefault, kAutoNameDefault);
   m_chooser.AddOption(kAutoNameCustom, kAutoNameCustom);
+
   Shoulder->ConfigSelectedFeedbackSensor(FeedbackDevice::CTRE_MagEncoder_Relative, 0, kTimeoutMs);
   Shoulder->SetStatusFramePeriod(StatusFrame::Status_1_General_, 5, kTimeoutMs);
   Shoulder->SetSensorPhase(kSensorPhase);
   Shoulder->SetInverted(kInvert);
+
   SmartDashboard::PutData("Auto Modes", &m_chooser);
 
   absolutePositionS = Shoulder->GetSelectedSensorPosition(0) & 0xFFF;
@@ -137,6 +146,7 @@ void Robot::AutonomousPeriodic() {
 }
 
 Joystick m_stick{3};
+Joystick m_partner{4};
 
 void Robot::TeleopInit() {}
 
@@ -144,6 +154,10 @@ double lastButtonPressed4 = false;
 double lastButtonPressed1 = true;
 double lastButtonPressed2 = false;
 double lastButtonPressed3 = true;
+
+double climbSpeed = 0;
+double hatchSpeed = 0;
+double rollerSpeed = 0;
 
 void Robot::TeleopPeriodic() {
 
@@ -162,6 +176,18 @@ void Robot::TeleopPeriodic() {
   bool buttonValueFive;
     buttonValueFive = m_stick.GetRawButtonPressed(5);
 
+  bool buttonValueOneP;
+    buttonValueOne = m_partner.GetRawButtonPressed(1);
+
+  bool buttonValueFourP;
+    buttonValueFour = m_partner.GetRawButtonPressed(4);
+
+  bool buttonValueTwoP;
+    buttonValueTwo = m_partner.GetRawButtonPressed(2);
+
+  bool buttonValueThreeP;
+    buttonValueThree = m_partner.GetRawButtonPressed(3);
+
     SmartDashboard::PutNumber("TargetS", targetPositionRotationsS);
     SmartDashboard::PutNumber("TargetW", targetPositionRotationsW);
     SmartDashboard::PutNumber("Shoulder Encoder", Shoulder->GetSelectedSensorPosition());
@@ -170,11 +196,9 @@ void Robot::TeleopPeriodic() {
 			/* Position mode - button just pressed */
 			targetPositionRotationsS = 25.0 * 4096; /* 10 Rotations in either direction */
 		}
-
   else if(/*!lastButtonPressed1 &&*/ buttonValueOne){
       targetPositionRotationsS = 7.5 *4096;
     }
-  
   else if(buttonValueFive){
     targetPositionRotationsS = 85 * 4096;
     targetPositionRotationsW = 45 * 4096;
@@ -184,13 +208,39 @@ void Robot::TeleopPeriodic() {
 			/* Position mode - button just pressed */
 			targetPositionRotationsW = 180.0 * 4096; /* 10 Rotations in either direction */
 		}
-
   else if(/*!lastButtonPressed3 &&*/ buttonValueThree){
       targetPositionRotationsW = 0 *4096;
     }
 
+  if(buttonValueOneP){
+      climbSpeed = -0.4;
+      //currentlyUp = 0;
+    }
+  else if(buttonValueFourP){
+      climbSpeed = 0.4;
+      //currentlyUp = 1;
+    }
+  else{
+      climbSpeed = 0;
+    }
+
+  if(buttonValueTwoP){
+      hatchSpeed = 1;
+    }
+  else if(buttonValueThreeP){
+      hatchSpeed = -1;
+    }
+  else{
+      hatchSpeed = 0;
+    }
+
+    rollerSpeed = (m_partner.GetY()+0.1);
+
     Wrist->Set(ControlMode::Position, targetPositionRotationsW);
     Shoulder->Set(ControlMode::Position, targetPositionRotationsS);
+    ClimbLead->Set(ControlMode::PercentOutput, climbSpeed);
+    Roller->Set(ControlMode::PercentOutput, rollerSpeed);
+    Hatch->Set(ControlMode::PercentOutput, hatchSpeed);
 
     double lastButtonPressed4 = buttonValueFour;
     double lastButtonPressed1 = buttonValueOne;
