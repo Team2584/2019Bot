@@ -222,9 +222,12 @@ VictorTest->Set(ControlMode::PercentOutput, speedV);
 double YPR[3];
  _pidgey->GetYawPitchRoll(YPR);
  int roll = YPR[2];
+ int pitch = YPR[1];
+ int yaw = YPR[0];
  frc::SmartDashboard::PutNumber("roll", roll);
-
- double speed = _mstick->GetRawAxis(5);
+frc::SmartDashboard::PutNumber("pitch", pitch);
+frc::SmartDashboard::PutNumber("yaw", yaw);
+ /*double speed = _mstick->GetRawAxis(5);
  WristTest->Set(ControlMode::PercentOutput, -speed);
 
  if(roll<0){
@@ -235,7 +238,7 @@ WristTest->Set(ControlMode::PercentOutput, -0.1);
  };
  if(roll=0){
 WristTest->Set(ControlMode::PercentOutput, 0);
- }
+ }*/
  
 };
 
