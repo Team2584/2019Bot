@@ -21,7 +21,7 @@
 
 
 //constexpr double kPi = 3.14159265358979323846264338327950288419716939937510;
-  //double kP = 0.1001, kI = 0.00001, kD = 0.5, kIz = 0, kFF = 0, kMaxOutput = 1, kMinOutput = -1;
+  double kP = 0.1001, kI = 0.00001, kD = 0.5, kIz = 0, kFF = 0, kMaxOutput = 1, kMinOutput = -1;
   static const int leftLeadDeviceID = 1, rightLeadDeviceID = 2, leftFollowDeviceID = 3, rightFollowDeviceID = 4;
   //static const int wristID = 6;
   rev::CANSparkMax m_leftLeadMotor{leftLeadDeviceID, rev::CANSparkMax::MotorType::kBrushless};
@@ -32,11 +32,12 @@
   //SETUP FOR PID MOTORS
   static const int deviceID = 5;
   static const int pidID = 6;
+  int rotations;
   rev::CANSparkMax m_motor{deviceID, rev::CANSparkMax::MotorType::kBrushless};
   rev::CANSparkMax m_slaveMotor{pidID, rev::CANSparkMax::MotorType::kBrushless};
   //rev::CANSparkMax m_motorFollower{motorFollowerDeviceID, rev::CANSparkMax::MotorType::kBrushless};
-  rev::CANPIDController m_pidController = m_motor.GetPIDController();
-  rev::CANPIDController m_pidController2 = m_slaveMotor.GetPIDController();
+  rev::CANPIDController m_pidController = m_leftLeadMotor.GetPIDController();
+  rev::CANPIDController m_pidController2 = m_rightLeadMotor.GetPIDController();
   rev::CANEncoder m_encoder = m_motor.GetEncoder();
   double encoderPos = m_encoder.GetPosition();
   double encoderVel = m_encoder.GetVelocity();
@@ -53,10 +54,10 @@ void Robot::RobotInit() {
   _pidgey = new PigeonIMU(0);
   m_leftFollowMotor.Follow(m_leftLeadMotor);
   _pidgey->SetYaw(0,0);
-  //m_rightFollowMotor.Follow(m_rightLeadMotor);
+  m_rightFollowMotor.Follow(m_rightLeadMotor);
   //limitSwitch = new frc::DigitalInput(1);
   // set PID coefficients
-  /*m_pidController.SetP(kP);
+  m_pidController.SetP(kP);
   m_pidController.SetI(kI);
   m_pidController.SetD(kD);
   m_pidController.SetIZone(kIz);
@@ -71,7 +72,7 @@ void Robot::RobotInit() {
   m_pidController2.SetOutputRange(kMinOutput, kMaxOutput);
 
   // display PID coefficients on SmartDashboard
-  frc::SmartDashboard::PutNumber("P Gain", kP);
+  /*frc::SmartDashboard::PutNumber("P Gain", kP);
   frc::SmartDashboard::PutNumber("I Gain", kI);
   frc::SmartDashboard::PutNumber("D Gain", kD);
   frc::SmartDashboard::PutNumber("I Zone", kIz);
@@ -113,7 +114,6 @@ void Robot::AutonomousInit() {
   if (m_autoSelected == kAutoNameCustom) {
     // Custom Auto goes here
   } else {
-    // Default Auto goes here
   }
 }
 
@@ -121,10 +121,11 @@ void Robot::AutonomousPeriodic() {
   if (m_autoSelected == kAutoNameCustom) {
     // Custom Auto goes here
   } else {
-    // Default Auto goes here
+    rotations=55.7303;
   }
-}
- 
+m_pidController.SetReference(rotations, rev::ControlType::kPosition);
+m_pidController2.SetReference(rotations, rev::ControlType::kPosition);
+} 
 //TalonSRX srx = {0};
 frc::Joystick m_stick{3};
 //frc::DifferentialDrive m_robotDrive{m_leftLeadMotor, m_rightLeadMotor};
