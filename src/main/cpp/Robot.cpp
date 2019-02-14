@@ -8,7 +8,7 @@
 #include "frc/WPILib.h"
 #include "Robot.h"
 #include "ctre/Phoenix.h"
-#include <frc/encoder.h>
+//#include <frc/encoder.h>
 #include <iostream>
 //#include <rev/SparkMax.h>
 #include <frc/SmartDashboard/SmartDashboard.h>
@@ -21,9 +21,9 @@
 
 
 //constexpr double kPi = 3.14159265358979323846264338327950288419716939937510;
-  double kP = 0.1001, kI = 0.00001, kD = 0.5, kIz = 0, kFF = 0, kMaxOutput = 1, kMinOutput = -1;
+  //double kP = 0.1001, kI = 0.00001, kD = 0.5, kIz = 0, kFF = 0, kMaxOutput = 1, kMinOutput = -1;
   static const int leftLeadDeviceID = 1, rightLeadDeviceID = 2, leftFollowDeviceID = 3, rightFollowDeviceID = 4;
-  static const int wristID = 6;
+  //static const int wristID = 6;
   rev::CANSparkMax m_leftLeadMotor{leftLeadDeviceID, rev::CANSparkMax::MotorType::kBrushless};
   rev::CANSparkMax m_rightLeadMotor{rightLeadDeviceID, rev::CANSparkMax::MotorType::kBrushless};
   rev::CANSparkMax m_leftFollowMotor{leftFollowDeviceID, rev::CANSparkMax::MotorType::kBrushless};
@@ -47,15 +47,16 @@
 void Robot::RobotInit() {
   TalonTest = new TalonSRX(3);
   VictorTest = new VictorSPX(4);
-  WristTest = new TalonSRX(wristID);
+  WristTest = new TalonSRX(6);
   _mstick = new frc::Joystick(0);
  //Setting up the Pigeon
-  _pidgey = new PigeonIMU(WristTest);
+  _pidgey = new PigeonIMU(0);
   m_leftFollowMotor.Follow(m_leftLeadMotor);
+  _pidgey->SetYaw(0,0);
   //m_rightFollowMotor.Follow(m_rightLeadMotor);
-  limitSwitch = new frc::DigitalInput(1);
+  //limitSwitch = new frc::DigitalInput(1);
   // set PID coefficients
-  m_pidController.SetP(kP);
+  /*m_pidController.SetP(kP);
   m_pidController.SetI(kI);
   m_pidController.SetD(kD);
   m_pidController.SetIZone(kIz);
@@ -80,7 +81,7 @@ void Robot::RobotInit() {
   frc::SmartDashboard::PutNumber("Encoder Position", encoderPos);
   frc::SmartDashboard::PutNumber("Encoder Velocity", encoderVel);
   // set up soleniod pulse 
-  //solen.SetPulseDuration(pulsedur);
+  //solen.SetPulseDuration(pulsedur);*/
 }
 
 /**
@@ -132,17 +133,17 @@ void Robot::TeleopInit() {}
 
 void Robot::TeleopPeriodic() {
     // read PID coefficients from SmartDashboard
-    double p = frc::SmartDashboard::GetNumber("P Gain", 0);
+    /*double p = frc::SmartDashboard::GetNumber("P Gain", 0);
     double i = frc::SmartDashboard::GetNumber("I Gain", 0);
     double d = frc::SmartDashboard::GetNumber("D Gain", 0);
     double iz = frc::SmartDashboard::GetNumber("I Zone", 0);
     double ff = frc::SmartDashboard::GetNumber("Feed Forward", 0);
     double max = frc::SmartDashboard::GetNumber("Max Output", 0);
-    double min = frc::SmartDashboard::GetNumber("Min Output", 0);
+    double min = frc::SmartDashboard::GetNumber("Min Output", 0);*/
     //double rotations = frc::SmartDashboard::GetNumber("Set Rotations", 0);
     //double btn;
 
-    double speedT;
+    /*double speedT;
     double speedV;
     double rotations;
     //double rotations = frc::SmartDashboard::GetNumber("SetPoint", rotations);
@@ -170,10 +171,10 @@ void Robot::TeleopPeriodic() {
     }
     else if(buttonValueFive == true){
       speedV = 100;
-    }
+    }*/
 
     // if PID coefficients on SmartDashboard have changed, write new values to controller
-    if((p != kP)) { m_pidController.SetP(p); kP = p; }
+    /*if((p != kP)) { m_pidController.SetP(p); kP = p; }
     if((i != kI)) { m_pidController.SetI(i); kI = i; }
     if((d != kD)) { m_pidController.SetD(d); kD = d; }
     if((iz != kIz)) { m_pidController.SetIZone(iz); kIz = iz; }
@@ -190,14 +191,14 @@ void Robot::TeleopPeriodic() {
     if((ff != kFF)) { m_pidController2.SetFF(ff); kFF = ff; }
     if((max != kMaxOutput) || (min != kMinOutput)) { 
       m_pidController2.SetOutputRange(min, max); 
-      kMinOutput = min; kMaxOutput = max; }
+      kMinOutput = min; kMaxOutput = max; }*/
     
 //m_robotDrive.TankDrive(-m_stick.GetRawAxis(1), -m_stick.GetRawAxis(5));
 //m_robotDrive.ArcadeDrive(-m_stick.GetRawAxis(0), -m_stick.GetRawAxis(5);)
-m_pidController.SetReference(rotations, rev::ControlType::kPosition);
+/*m_pidController.SetReference(rotations, rev::ControlType::kPosition);
 m_pidController2.SetReference(rotations, rev::ControlType::kPosition);
 TalonTest->Set(ControlMode::PercentOutput, speedT);
-VictorTest->Set(ControlMode::PercentOutput, speedV);
+VictorTest->Set(ControlMode::PercentOutput, speedV);*/
 
 
 //frc::SmartDashboard::PutNumber("SetPoint", rotations);
@@ -214,10 +215,10 @@ VictorTest->Set(ControlMode::PercentOutput, speedV);
   else{
     solen.Set(0);
   }*/
-  while(limitSwitch->Get() == true){
+  /*while(limitSwitch->Get() == true){
     speedT = 10;
   }
-  
+  */
 //Pigeon feedback loop
 double YPR[3];
  _pidgey->GetYawPitchRoll(YPR);
