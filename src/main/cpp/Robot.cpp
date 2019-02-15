@@ -7,6 +7,7 @@
 
 #include "Robot.h"
 #include "ctre/Phoenix.h"
+#include "rev/CANSparkMax.h"
 #include <iostream>
 #include <frc/encoder.h>
 #include <frc/smartdashboard/SmartDashboard.h>
@@ -19,19 +20,34 @@
 #include <thread>
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/core/core.hpp>
+#include "networktables/NetworkTable.h"
+#include "networktables/NetworkTableInstance.h"
 
 using namespace frc;
 using namespace std;
 
-static const int ShoulderID = 1, WristID = 5, LeadID = 3, FollowID = 4, HatchID = 7, RollerID = 6;
+static const int ShoulderID = 1, WristID = 5, LeadID = 3, FollowID = 4, HatchID = 7, RollerID = 6, CrawlID = 2;
 string _sb;
 int _loops = 0;
 
-double targetPositionRotationsS = 0;
-double targetPositionRotationsW = 0;
+static const int leftLeadDeviceID = 3, rightLeadDeviceID = 1, leftFollowDeviceID = 4, rightFollowDeviceID = 2;
+  rev::CANSparkMax m_leftLeadMotor{leftLeadDeviceID, rev::CANSparkMax::MotorType::kBrushless};
+  rev::CANSparkMax m_rightLeadMotor{rightLeadDeviceID, rev::CANSparkMax::MotorType::kBrushless};
+  rev::CANSparkMax m_leftFollowMotor{leftFollowDeviceID, rev::CANSparkMax::MotorType::kBrushless};
+  rev::CANSparkMax m_rightFollowMotor{rightFollowDeviceID, rev::CANSparkMax::MotorType::kBrushless};
 
 double absolutePositionS = 0;
 double absolutePositionW = 0;
+
+
+
+  double kPgain = 0.04; /* percent throttle per degree of error */
+	double kDgain = 0.0004; /* percent throttle per angular velocity dps */
+	double kMaxCorrectionRatio = 0.30; /* cap corrective turning throttle to 30 percent of forward throttle */
+	/** holds the current angle to servo to */
+	double _targetAngle = 0;
+	/** count loops to print every second or so */
+	int _printLoops = 0;
 
 static void VisionThread()
     {
@@ -40,6 +56,12 @@ static void VisionThread()
     }
 
 void Robot::RobotInit() {
+  std::shared_ptr<NetworkTable> table = nt::NetworkTableInstance::GetDefault().GetTable("limelight");
+  double targetOffsetAngle_Horizontal = table->GetNumber("tx",0.0);
+  double targetOffsetAngle_Vertical = table->GetNumber("ty",0.0);
+  double targetArea = table->GetNumber("ta",0.0);
+  double targetSkew = table->GetNumber("ts",0.0);
+  nt::NetworkTableInstance::GetDefault().GetTable("limelight")->PutNumber("pipeline",0);
   //CameraServer::GetInstance()->StartAutomaticCapture();
   std::thread visionThread(VisionThread);
   visionThread.detach();
@@ -48,6 +70,10 @@ void Robot::RobotInit() {
   const bool kInvert = false;
   const bool kSensorPhase = false;
 
+  m_leftFollowMotor.Follow(m_leftLeadMotor);
+  m_rightFollowMotor.Follow(m_rightLeadMotor);
+
+  Counter *hatchEncoder = new Counter(0);
   Shoulder = new WPI_TalonSRX(ShoulderID);
   Wrist = new WPI_TalonSRX(WristID);
   Hatch = new WPI_TalonSRX(HatchID);
@@ -55,6 +81,8 @@ void Robot::RobotInit() {
   ClimbFollow = new WPI_VictorSPX(FollowID);
   Roller = new WPI_VictorSPX(RollerID);
   ClimbFollow->Follow(*ClimbLead);
+  Crawl = new WPI_VictorSPX(CrawlID);
+
 
   m_chooser.SetDefaultOption(kAutoNameDefault, kAutoNameDefault);
   m_chooser.AddOption(kAutoNameCustom, kAutoNameCustom);
@@ -79,8 +107,8 @@ void Robot::RobotInit() {
 		Shoulder->ConfigPeakOutputReverse(-0.5, kTimeoutMs); 
 
     Shoulder->Config_kF(kPIDLoopIdx, 0.0, kTimeoutMs);
-		Shoulder->Config_kP(kPIDLoopIdx, 0.75, kTimeoutMs);
-		Shoulder->Config_kI(kPIDLoopIdx, 0.0, kTimeoutMs);
+		Shoulder->Config_kP(kPIDLoopIdx, 1, kTimeoutMs);
+		Shoulder->Config_kI(kPIDLoopIdx, 0.0001, kTimeoutMs);
 		Shoulder->Config_kD(kPIDLoopIdx, 0.0, kTimeoutMs);
 
     int absolutePositionW = Wrist->GetSelectedSensorPosition(0) & 0xFFF;
@@ -96,7 +124,7 @@ void Robot::RobotInit() {
 		Wrist->ConfigPeakOutputReverse(-0.5, kTimeoutMs); 
 
    Wrist->Config_kF(kPIDLoopIdx, 0.0, kTimeoutMs);
-		Wrist->Config_kP(kPIDLoopIdx, 0.1, kTimeoutMs);
+		Wrist->Config_kP(kPIDLoopIdx, 0.02, kTimeoutMs);
 		Wrist->Config_kI(kPIDLoopIdx, 0.0, kTimeoutMs);
 		Wrist->Config_kD(kPIDLoopIdx, 0.0, kTimeoutMs);
 }
@@ -145,8 +173,10 @@ void Robot::AutonomousPeriodic() {
   }
 }
 
-Joystick m_stick{3};
-Joystick m_partner{4};
+Joystick * m_stick = new Joystick(3);
+Joystick * m_partner = new Joystick(4);
+frc::DifferentialDrive m_robotDrive{m_leftLeadMotor, m_rightLeadMotor};
+
 
 void Robot::TeleopInit() {}
 
@@ -158,65 +188,115 @@ double lastButtonPressed3 = true;
 double climbSpeed = 0;
 double hatchSpeed = 0;
 double rollerSpeed = 0;
+double crawlSpeed = 0;
+
+double pos;
+
+double targetPositionRotationsS = 0;
+double targetPositionRotationsW = 0;
+
+double targetVelocity_UnitsPer100ms;
+
+double wristSpeed;
 
 void Robot::TeleopPeriodic() {
 
   bool buttonValueOne;
-    buttonValueOne = m_stick.GetRawButtonPressed(1);
+    buttonValueOne = m_stick->GetRawButtonPressed(1);
 
   bool buttonValueTwo;
-    buttonValueTwo = m_stick.GetRawButtonPressed(2);
+    buttonValueTwo = m_stick->GetRawButtonPressed(2);
 
   bool buttonValueThree;
-    buttonValueThree = m_stick.GetRawButtonPressed(3);
+    buttonValueThree = m_stick->GetRawButtonPressed(3);
 
   bool buttonValueFour;
-    buttonValueFour = m_stick.GetRawButtonPressed(4);
+    buttonValueFour = m_stick->GetRawButtonPressed(4);
 
   bool buttonValueFive;
-    buttonValueFive = m_stick.GetRawButtonPressed(5);
+    buttonValueFive = m_stick->GetRawButton(5);
+
+  bool buttonValueSix;
+    buttonValueSix = m_stick->GetRawButton(6);
+
+  bool buttonValueSeven;
+    buttonValueSeven = m_stick->GetRawButton(7);
+    
+  bool buttonValueEight;
+    buttonValueEight = m_stick->GetRawButton(8);
 
   bool buttonValueOneP;
-    buttonValueOne = m_partner.GetRawButtonPressed(1);
+    buttonValueOne = m_partner->GetRawButtonPressed(1);
 
-  bool buttonValueFourP;
-    buttonValueFour = m_partner.GetRawButtonPressed(4);
+  bool buttonValueFiveP;
+    buttonValueFour = m_partner->GetRawButtonPressed(5);
 
-  bool buttonValueTwoP;
-    buttonValueTwo = m_partner.GetRawButtonPressed(2);
+  bool buttonValueSixP;
+    buttonValueTwo = m_partner->GetRawButtonPressed(6);
 
   bool buttonValueThreeP;
-    buttonValueThree = m_partner.GetRawButtonPressed(3);
+    buttonValueThree = m_partner->GetRawButtonPressed(3);
+
+  bool buttonValueSevenP;
+    buttonValueSevenP = m_partner->GetRawButton(7);
+
+  bool buttonValueEightP;
+    buttonValueEightP = m_partner->GetRawButton(8);
+
+    int hatchPos = hatchEncoder->Get();
 
     SmartDashboard::PutNumber("TargetS", targetPositionRotationsS);
     SmartDashboard::PutNumber("TargetW", targetPositionRotationsW);
     SmartDashboard::PutNumber("Shoulder Encoder", Shoulder->GetSelectedSensorPosition());
+    //SmartDashboard::PutNumber("Hatch Encoder", hatchEncoder->Get());
 
-  if (buttonValueFour /*&& !lastButtonPressed4*/) {
+  if (buttonValueOne /*&& !lastButtonPressed4*/) {
 			/* Position mode - button just pressed */
-			targetPositionRotationsS = 25.0 * 4096; /* 10 Rotations in either direction */
+			targetPositionRotationsS = 12.5 * 4096; /* 10 Rotations in either direction */
 		}
-  else if(/*!lastButtonPressed1 &&*/ buttonValueOne){
-      targetPositionRotationsS = 7.5 *4096;
+  else if(/*!lastButtonPressed1 &&*/ buttonValueFour){
+      targetPositionRotationsS = 3.5 *4096;
     }
-  else if(buttonValueFive){
+  /*if(buttonValueFive){
     targetPositionRotationsS = 85 * 4096;
     targetPositionRotationsW = 45 * 4096;
+  }*/
+  if(buttonValueSevenP){
+    pos++;
+    targetPositionRotationsW = pos * 4096;
+    
+    Wrist->Set(ControlMode::Position, targetPositionRotationsW);
+  }
+  else if(buttonValueEightP){
+    pos--;
+    targetPositionRotationsW = pos * 4096;    
+    Wrist->Set(ControlMode::Position, targetPositionRotationsW);
+  }
+  else{
+    Wrist->Set(ControlMode::Position, targetPositionRotationsW);
   }
 
-  if (buttonValueTwo /*&& !lastButtonPressed2*/) {
-			/* Position mode - button just pressed */
-			targetPositionRotationsW = 180.0 * 4096; /* 10 Rotations in either direction */
+  /*if (buttonValueTwo && !lastButtonPressed2) {
+			//Position mode - button just pressed 
+			targetPositionRotationsW = 27.0 * 4096; // 10 Rotations in either direction 
 		}
-  else if(/*!lastButtonPressed3 &&*/ buttonValueThree){
+  else if(!lastButtonPressed3 && buttonValueThree){
       targetPositionRotationsW = 0 *4096;
     }
+  else if(buttonValueFive){
+    double wristSpeed = -0.2;
+    Wrist->Set(ControlMode::PercentOutput, wristSpeed);
+  }
+  else if(buttonValueSix){
+    double wristSpeed = 0.2;
+    Wrist->Set(ControlMode::PercentOutput, wristSpeed);
+  }*/
 
-  if(buttonValueOneP){
+  if(buttonValueSeven){
       climbSpeed = -0.4;
       //currentlyUp = 0;
     }
-  else if(buttonValueFourP){
+  else if(buttonValueEight){
       climbSpeed = 0.4;
       //currentlyUp = 1;
     }
@@ -224,28 +304,38 @@ void Robot::TeleopPeriodic() {
       climbSpeed = 0;
     }
 
-  if(buttonValueTwoP){
+    if(buttonValueFiveP){
+      rollerSpeed = 0.75;
+    }
+    else if(buttonValueSixP){
+      rollerSpeed = -0.75;
+    }
+
+  if(buttonValueFive){
       hatchSpeed = 1;
     }
-  else if(buttonValueThreeP){
+  else if(buttonValueSix){
       hatchSpeed = -1;
     }
   else{
       hatchSpeed = 0;
     }
 
-    rollerSpeed = (m_partner.GetY()+0.1);
+    //crawlSpeed = abs(m_partner->GetRawAxis(5))*-0.20;
 
-    Wrist->Set(ControlMode::Position, targetPositionRotationsW);
     Shoulder->Set(ControlMode::Position, targetPositionRotationsS);
     ClimbLead->Set(ControlMode::PercentOutput, climbSpeed);
+    ClimbFollow->Set(ControlMode::PercentOutput, climbSpeed);
     Roller->Set(ControlMode::PercentOutput, rollerSpeed);
     Hatch->Set(ControlMode::PercentOutput, hatchSpeed);
+    Crawl->Set(ControlMode::PercentOutput, crawlSpeed);
 
     double lastButtonPressed4 = buttonValueFour;
     double lastButtonPressed1 = buttonValueOne;
     double lastButtonPressed2 = buttonValueTwo;
     double lastButtonPressed3 = buttonValueThree;
+
+    m_robotDrive.ArcadeDrive((-m_stick->GetY()*0.5), (m_stick->GetX()*0.5));
 
 }
 

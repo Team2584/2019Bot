@@ -11,14 +11,17 @@
 #include "ctre/Phoenix.h"
 #include <frc/IterativeRobot.h>
 #include <frc/smartdashboard/SendableChooser.h>
+#include <frc/DigitalInput.h>
 
 class Robot : public frc::IterativeRobot {
   TalonSRX * Shoulder;
   TalonSRX * Wrist;
   TalonSRX * ClimbLead;
-  TalonSRX * Hatch;
+  TalonSRX * Hatch; 
   VictorSPX * ClimbFollow;
   VictorSPX * Roller;
+  VictorSPX * Crawl;
+  PigeonIMU * _pidgey;
  public:
   void RobotInit() override;
   void RobotPeriodic() override;
