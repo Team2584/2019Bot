@@ -32,6 +32,9 @@ class robotIO {
   bool getButtonSix();
   bool getButtonSeven();
   bool getButtonEight();
+  int getPOV();
+  double getLT();
+  double getRT();
   double getY();
   double getX();
   double getAxisFour();

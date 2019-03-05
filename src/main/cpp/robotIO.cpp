@@ -22,9 +22,12 @@ using namespace std;
     bool buttonSix;
     bool buttonSeven;
     bool buttonEight;
+    int dPad;
+    double lTrigger;
+    double rTrigger;
     double yAxis;
     double xAxis;
-    double axisFour;
+    bool axisFour;
     double axisFive;
     double axisFivePartner;
     bool buttonOnePartner;
@@ -82,6 +85,21 @@ bool robotIO::getButtonSeven(){
 bool robotIO::getButtonEight(){
     buttonEight = m_stick->GetRawButton(8);
     return buttonEight;
+}
+
+int robotIO::getPOV(){
+    dPad = m_stick->GetPOV();
+    return dPad;
+}
+
+double robotIO::getLT(){
+    lTrigger = m_stick->GetTwist();
+    return lTrigger;
+}
+
+double robotIO::getRT(){
+    rTrigger = m_stick->GetThrottle();
+    return rTrigger;
 }
 
 double robotIO::getY(){
