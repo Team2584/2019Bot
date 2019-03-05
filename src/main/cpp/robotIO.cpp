@@ -88,7 +88,7 @@ bool robotIO::getButtonEight(){
 }
 
 int robotIO::getPOV(){
-    dPad = m_stick->GetPOV();
+    dPad = m_stick->GetPOV(); 
     return dPad;
 }
 
