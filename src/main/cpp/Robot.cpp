@@ -206,16 +206,19 @@ frc::DifferentialDrive m_robotDrive{m_leftLeadMotor, m_rightLeadMotor};
 
 int shoulderPos;
 double wristStart;
-double hatchloc;
+double hatchStart;
 int hatchPos;
 
-//V V V V  PUT STUFF IN HERE V V V V
+/*V V V V PUT STUFF IN HERE V V V V*/
+/*V V V V V V V V V V V V V V V V V*/
 void Robot::TeleopInit() {
   wristStart = Wrist->GetSelectedSensorPosition(0);
   hatchPos = 0;
   shoulderPos = 0;
-  hatchloc = Hatch->GetSelectedSensorPosition(0);
+  hatchStart = Hatch->GetSelectedSensorPosition(0);
 } 
+/*^ ^ ^ ^ PUT STUFF IN HERE ^ ^ ^ ^*/
+/*^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^*/
 
   //SPEED SETUP
   double climbSpeed = 0;
@@ -225,7 +228,7 @@ void Robot::TeleopInit() {
   double wristSpeed = 0;
   bool isUp = 0;
   double shoulderManual = 0;
-  double hatchStart = 0;
+  //double hatchStart = 0;
 
   //POSITION SETUP
   double pos;
@@ -241,12 +244,13 @@ void Robot::TeleopInit() {
 void Robot::TeleopPeriodic() {
 
   //ROLLER SPEED SET
-  //
-  //
-  //
-  //
-  //
-  //
+
+  ////////  ////////  //        //       //////// ////////
+  //    //  //    //  //        //       //       //    //
+  ///////   //    //  //        //       //////   ///////
+  //  //    //    //  //        //       //       //  //
+  //    //  ///////   ////////  //////// //////// //    //
+
   if(inputs->getButtonTwo()||inputs->getButtonTwoPartner()){
     rollerSpeed = 1;
     Roller->Set(ControlMode::PercentOutput, rollerSpeed);
@@ -274,14 +278,14 @@ void Robot::TeleopPeriodic() {
   bool hatchHeld = false;
   
   if(hatchPos == 0 && inputs->getButtonFive()){
-    targetPositionRotationsH = hatchloc - 2150;
+    targetPositionRotationsH = hatchStart - 2150;
     hatchStart = targetPositionRotationsH;
     Hatch->Set(ControlMode::Position, targetPositionRotationsH);
     hatchPos = 2;
   }
   else if (hatchPos == 1 && inputs->getButtonFive()){
     if (hatchHeld){
-      targetPositionRotationsH = hatchStart;
+      targetPositionRotationsH = hatchStart; // Resets hatch after manual control
     }
     targetPositionRotationsH =  targetPositionRotationsH - 1350;
     Hatch->Set(ControlMode::Position, targetPositionRotationsH);
@@ -289,23 +293,28 @@ void Robot::TeleopPeriodic() {
   }
   else if(hatchPos == 2 && inputs->getButtonSix()){ 
     if (hatchHeld){
-      targetPositionRotationsH = hatchStart +1350;
+      targetPositionRotationsH = hatchStart + 1350; // resets hatch after manual control
     }   
-    targetPositionRotationsH = targetPositionRotationsH + 1400;
+    targetPositionRotationsH = targetPositionRotationsH + 1350;
     Hatch->Set(ControlMode::Position, targetPositionRotationsH);
     hatchPos = 1;
   }
   else {
-    if(inputs->getLT() > .1){
-    hatchSpeed = targetPositionRotationsH - inputs->getLT() * 500;
-    hatchHeld = true;
-    Hatch->Set(ControlMode::Position, hatchSpeed);
-    }
-    else if(inputs->getRT() > .1){
-    hatchSpeed = targetPositionRotationsH + inputs->getRT() * 500;
-    hatchHeld = true;
-    Hatch->Set(ControlMode::Position, hatchSpeed);
-    }
+    //Manual hatch control
+    //if(inputs->getLT() == 1){
+      while(inputs->getLT() == 1){
+      hatchSpeed = targetPositionRotationsH - 500;
+      hatchHeld = true;
+      Hatch->Set(ControlMode::Position, hatchSpeed);
+      }
+    //}
+    //else if(inputs->getRT() == 1){
+      while(inputs->getRT() == 1){
+      hatchSpeed = targetPositionRotationsH + inputs->getRT() * 500;
+      hatchHeld = true;
+      Hatch->Set(ControlMode::Position, hatchSpeed);
+      }
+    //}
   } /*
   if(inputs->getButtonFivePartner() || inputs->getLT()){
       hatchSpeed = -.5;
@@ -328,11 +337,13 @@ void Robot::TeleopPeriodic() {
     }*/
 
   //Shoulder & Wrist PID Cargo
-  //
-  //
-  //
-  //
-  //
+
+  //////    //  //////          //////
+  //    //  //  //    //      //
+  /////     //  //    //  //  //
+  //        //  //    //      //
+  //        //  /////           //////
+
   if(shoulderPos < 2 && inputs->getButtonOnePressed()){
     //Ball Grab
     rotations = -22; //Use for 50:1 Arm gearbox (Comp Bot)
@@ -374,7 +385,7 @@ void Robot::TeleopPeriodic() {
     shoulderPos = 2; 
   }
   else if(shoulderPos == 2 && inputs->getButtonFourPressed()){
-    //Rocket Mid Cargo
+    //Rocket High Cargo
     rotations = -93.75; //Use for 50:1 Arm gearbox (Comp Bot)
     //targetPositionRotationsW = -45000;
     m_pidController.SetReference(rotations, rev::ControlType::kPosition);
@@ -405,11 +416,12 @@ void Robot::TeleopPeriodic() {
     }
 
     //Wrist max and min limits
-   /* if (targetPositionRotationsW > wristStart + 87000){
-      targetPositionRotationsW = wristStart + 87000;
-    }/*
-    else if (targetPositionRotationsW < -400000){
-      targetPositionRotationsW = -400000;
+    /*
+    if (targetPositionRotationsW > Wrist->GetSelectedSensorPosition(0) + 100){
+      targetPositionRotationsW = Wrist->GetSelectedSensorPosition(0);
+    }
+    else if (targetPositionRotationsW < Wrist->GetSelectedSensorPosition(0) - 100){
+      targetPositionRotationsW = Wrist->GetSelectedSensorPosition(0);
     }*/
     
     m_pidController.SetReference(rotations, rev::ControlType::kPosition);
@@ -417,6 +429,13 @@ void Robot::TeleopPeriodic() {
   }  
 
   //Shoulder & Wrist PID Hatch
+
+  //////    //  //////        //    //
+  //    //  //  //    //      //    //
+  /////     //  //    //  //  ////////
+  //        //  //    //      //    //
+  //        //  /////         //    //
+
   if(shoulderPos < 2 && inputs->getPOV() == 180){
     //Low Hatch Position
     rotations = -15; //Use for 50:1 Arm gearbox (Comp Bot)
@@ -449,7 +468,7 @@ void Robot::TeleopPeriodic() {
     Wrist->Set(ControlMode::Position, targetPositionRotationsW);
     shoulderPos = 2;
   }
-  else{
+  /*else{
     //Manual Wrist Control
     if(abs(inputs->getAxisFive()) > .1){
     targetPositionRotationsW = targetPositionRotationsW - (inputs->getAxisFive() * 4096); //* 2000);
@@ -478,14 +497,21 @@ void Robot::TeleopPeriodic() {
     }/*
     else if (targetPositionRotationsW < -400000){
       targetPositionRotationsW = -400000;
-    }*/
+    }
     
     m_pidController.SetReference(rotations, rev::ControlType::kPosition);
     Wrist->Set(ControlMode::Position, targetPositionRotationsW);
-  }  
+  }  */
   
 
   //ClIMB SPEED
+
+    //////  //        //  //      //  //////
+  //        //        //  ////  ////  //    //
+  //        //        //  //  //  //  //////
+  //        //        //  //      //  //    //
+    //////  ////////  //  //      //  //////
+
   if(inputs->getButtonSevenPartner()){
     climbSpeed = 0.75;
   }
@@ -519,7 +545,7 @@ else{
   SmartDashboard::PutNumber("XMain", inputs->getX());
   SmartDashboard::PutNumber("WristPos", Wrist->GetSelectedSensorPosition(0));
   SmartDashboard::PutNumber("WristTargetPos", targetPositionRotationsW);
-  SmartDashboard::PutNumber("HatchValue", Hatch->GetSelectedSensorPosition(1));
+  SmartDashboard::PutNumber("HatchValue", Hatch->GetSelectedSensorPosition(0));
   SmartDashboard::PutNumber("HatchTargetPos", targetPositionRotationsH);
   SmartDashboard::PutNumber("HatchPos", hatchPos);
   SmartDashboard::PutNumber("ShoulderPos", shoulderPos);
