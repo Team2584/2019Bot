@@ -315,7 +315,7 @@ void Robot::TeleopPeriodic() {
       Hatch->Set(ControlMode::Position, hatchSpeed);
       }
     //}
-  } /*
+  } /*// Old Manual Control
   if(inputs->getButtonFivePartner() || inputs->getLT()){
       hatchSpeed = -.5;
       hatchHeld = false;
@@ -349,7 +349,7 @@ void Robot::TeleopPeriodic() {
     rotations = -22; //Use for 50:1 Arm gearbox (Comp Bot)
     targetPositionRotationsW = -900; //Use for 100:1 Wrist gearbox (Comp Bot)
     m_pidController.SetReference(rotations, rev::ControlType::kPosition);
-    Wrist->Set(ControlMode::Position, targetPositionRotationsW);
+    //Wrist->Set(ControlMode::Position, targetPositionRotationsW);
     shoulderPos = 0;
   }
   else if(shoulderPos < 1 && inputs->getButtonFourPressed()){
@@ -357,7 +357,7 @@ void Robot::TeleopPeriodic() {
     rotations = -27; //Use for 50:1 Arm gearbox (Comp Bot)
     targetPositionRotationsW = 20000; //Use for 100:1 Wrist gearbox (Comp Bot)
     m_pidController.SetReference(rotations, rev::ControlType::kPosition);
-    Wrist->Set(ControlMode::Position, targetPositionRotationsW);
+    //Wrist->Set(ControlMode::Position, targetPositionRotationsW);
     shoulderPos = 1;
   }
   else if(shoulderPos == 2 && inputs->getButtonOnePressed()){
@@ -365,32 +365,48 @@ void Robot::TeleopPeriodic() {
     rotations = -27;  //Use for 50:1 Arm gearbox (Comp Bot)
     //targetPositionRotationsW = -15000;
     m_pidController.SetReference(rotations, rev::ControlType::kPosition);
-    Wrist->Set(ControlMode::Position, targetPositionRotationsW);
+    //Wrist->Set(ControlMode::Position, targetPositionRotationsW);
     shoulderPos = 1;
   }
   else if(shoulderPos == 1 && inputs->getButtonFourPressed()){
-    //Rocket Mid Cargo
-    rotations = -67.7; //Use for 50:1 Arm gearbox (Comp Bot)
+    //Cargo Ship
+    rotations = -60; //Use for 50:1 Arm gearbox (Comp Bot)
     //targetPositionRotationsW = -45000;
     m_pidController.SetReference(rotations, rev::ControlType::kPosition);
-    Wrist->Set(ControlMode::Position, targetPositionRotationsW);
+    //Wrist->Set(ControlMode::Position, targetPositionRotationsW);
     shoulderPos = 2;
   }
   else if(shoulderPos == 3 && inputs->getButtonOnePressed()){
+    //Cargo Ship
+    rotations = -60; //Use for 50:1 Arm gearbox (Comp Bot)
+    //targetPositionRotationsW = -45000;
+    m_pidController.SetReference(rotations, rev::ControlType::kPosition);
+    //Wrist->Set(ControlMode::Position, targetPositionRotationsW);
+    shoulderPos = 2;
+  }
+  else if(shoulderPos == 4 && inputs->getButtonOnePressed()){
     //Rocket Mid Cargo
     rotations = -67.7; //Use for 50:1 Arm gearbox (Comp Bot)
     //targetPositionRotationsW = -45000;
     m_pidController.SetReference(rotations, rev::ControlType::kPosition);
-    Wrist->Set(ControlMode::Position, targetPositionRotationsW);
-    shoulderPos = 2; 
+    //Wrist->Set(ControlMode::Position, targetPositionRotationsW);
+    shoulderPos = 3; 
   }
   else if(shoulderPos == 2 && inputs->getButtonFourPressed()){
+    //Rocket Mid Cargo
+    rotations = -67.7; //Use for 50:1 Arm gearbox (Comp Bot)
+    //targetPositionRotationsW = -45000;
+    m_pidController.SetReference(rotations, rev::ControlType::kPosition);
+    //Wrist->Set(ControlMode::Position, targetPositionRotationsW);
+    shoulderPos = 3; 
+  }
+  else if(shoulderPos == 3 && inputs->getButtonFourPressed()){
     //Rocket High Cargo
     rotations = -93.75; //Use for 50:1 Arm gearbox (Comp Bot)
     //targetPositionRotationsW = -45000;
     m_pidController.SetReference(rotations, rev::ControlType::kPosition);
-    Wrist->Set(ControlMode::Position, targetPositionRotationsW);
-    shoulderPos = 3; 
+    //Wrist->Set(ControlMode::Position, targetPositionRotationsW);
+    shoulderPos = 4; 
   }
   else{
     //Manual Wrist Control
