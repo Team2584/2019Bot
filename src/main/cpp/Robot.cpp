@@ -99,6 +99,8 @@ void Robot::RobotInit() {
 
   Wrist = new WPI_TalonSRX(WristID);
 
+  limitSwitch = new DigitalInput(1);
+
       //SET FOLLOWER MOTORS FOR DRIVE
     m_leftFollowMotor.Follow(m_leftLeadMotor);
     m_rightFollowMotor.Follow(m_rightLeadMotor);
@@ -442,7 +444,7 @@ void Robot::TeleopPeriodic() {
   }
   else{
     //Manual Wrist Control
-    if(abs(inputs->getAxisFive()) > .1){
+    if(abs(inputs->getAxisFive()) > .1 && !limitSwitch->Get()){
     targetPositionRotationsW = targetPositionRotationsW + (inputs->getAxisFive() * 4096); //* 2000);
     }
     //Manual Shoulder Control

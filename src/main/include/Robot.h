@@ -11,6 +11,7 @@
 #include "ctre/phoenix.h"
 #include <frc/IterativeRobot.h>
 #include <frc/smartdashboard/SendableChooser.h>
+#include <frc/WPILib.h>
 
 class Robot : public frc::IterativeRobot {
     
@@ -21,6 +22,8 @@ class Robot : public frc::IterativeRobot {
   VictorSPX * ClimbFollow;
   VictorSPX * Roller;
   TalonSRX * Crawl;
+  //Limit Switch
+  frc::DigitalInput * limitSwitch;
  public:
   void RobotInit() override;
   void RobotPeriodic() override;
