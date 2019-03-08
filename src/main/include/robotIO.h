@@ -51,6 +51,9 @@ class robotIO {
   bool getButtonSixPartner();
   bool getButtonSevenPartner();
   bool getButtonEightPartner();
+  int getPOVPartner();
+  double getLTPartner();
+  double getRTPartner();
   double getYPartner();
   double getAxisFivePartner();
   double getAxisFourPartner();

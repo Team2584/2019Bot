@@ -29,12 +29,17 @@ using namespace std;
     double xAxis;
     bool axisFour;
     double axisFive;
+
+    
     double axisFivePartner;
     bool buttonOnePartner;
     bool buttonFourPartner;
     bool buttonFivePartner;
     bool buttonSixPartner;
     bool buttonTwoPartner;
+    int dPadPartner;
+    double lTriggerPartner;
+    double rTriggerPartner;
     double YPartner;
     bool buttonFourPressed;
     bool buttonOnePressed;
@@ -140,6 +145,21 @@ bool robotIO::getButtonFivePartner(){
 bool robotIO::getButtonSixPartner(){
     buttonSixPartner = m_partner->GetRawButton(6);
     return buttonSixPartner;
+}
+
+int robotIO::getPOVPartner(){
+    dPadPartner = m_partner->GetPOV(); 
+    return dPadPartner;
+}
+
+double robotIO::getLTPartner(){
+    lTriggerPartner = m_partner->GetTwist();
+    return lTriggerPartner;
+}
+
+double robotIO::getRTPartner(){
+    rTriggerPartner = m_partner->GetThrottle();
+    return rTriggerPartner;
 }
 
 double robotIO::getYPartner(){
