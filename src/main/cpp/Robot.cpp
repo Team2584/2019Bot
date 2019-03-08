@@ -404,9 +404,9 @@ void Robot::TeleopPeriodic() {
   }
   else{
     //Manual Wrist Control
-    if(abs(inputs->getAxisFive()) > .1){
+    /*if(abs(inputs->getAxisFive()) > .1){
     targetPositionRotationsW = targetPositionRotationsW - (inputs->getAxisFive() * 4096);
-    }
+    }*/
     //Manual Shoulder Control
     if(abs(inputs->getY()) > 0.08){
       shoulderManual = (inputs->getY() * .6); // Set arm target rate the same as target movement
@@ -478,15 +478,10 @@ void Robot::TeleopPeriodic() {
     //Wrist->Set(ControlMode::Position, targetPositionRotationsW);
     shoulderPos = 2;
   }
-  /*else{
+  else{
     //Manual Wrist Control
-<<<<<<< HEAD
-    if(abs(inputs->getAxisFive()) > .1 && !limitSwitch->Get()){
+    if(abs(inputs->getAxisFive()) > .1 && limitSwitch->Get() == 1){
     targetPositionRotationsW = targetPositionRotationsW + (inputs->getAxisFive() * 4096); //* 2000);
-=======
-    if(abs(inputs->getAxisFive()) > .1){
-    targetPositionRotationsW = targetPositionRotationsW - (inputs->getAxisFive() * 4096); //* 2000);
->>>>>>> e961b3e2c63ff3391b936eae8bdd20dcc6b6371b
     }
     //Manual Shoulder Control
     if(abs(inputs->getY()) > 0.05){
@@ -515,8 +510,8 @@ void Robot::TeleopPeriodic() {
     }
     
     m_pidController.SetReference(rotations, rev::ControlType::kPosition);
-    Wrist->Set(ControlMode::Position, targetPositionRotationsW);
-  }  */
+    Wrist->Set(ControlMode::Position, targetPositionRotationsW);*/
+  }  
   
 
   //ClIMB SPEED
@@ -564,7 +559,8 @@ else{
   SmartDashboard::PutNumber("HatchPos", hatchPos);
   SmartDashboard::PutNumber("ShoulderPos", shoulderPos);
   SmartDashboard::PutNumber("ShoulderValue", m_encoder.GetPosition());
-  SmartDashboard::PutNumber("ShoulderTargetPos", rotations);  
+  SmartDashboard::PutNumber("ShoulderTargetPos", rotations); 
+  SmartDashboard::PutNumber("LimitSwitch", limitSwitch->Get()); 
 
   //Driver Control Inputs
   //Deadband modifier
