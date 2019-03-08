@@ -148,17 +148,17 @@ bool robotIO::getButtonSixPartner(){
 }
 
 int robotIO::getPOVPartner(){
-    dPadPartner = m_stick->GetPOV(); 
+    dPadPartner = m_partner->GetPOV(); 
     return dPadPartner;
 }
 
 double robotIO::getLTPartner(){
-    lTriggerPartner = m_stick->GetTwist();
+    lTriggerPartner = m_partner->GetTwist();
     return lTriggerPartner;
 }
 
 double robotIO::getRTPartner(){
-    rTriggerPartner = m_stick->GetThrottle();
+    rTriggerPartner = m_partner->GetThrottle();
     return rTriggerPartner;
 }
 
