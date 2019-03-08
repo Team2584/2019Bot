@@ -404,9 +404,12 @@ void Robot::TeleopPeriodic() {
   }
   else{
     //Manual Wrist Control
-    /*if(abs(inputs->getAxisFive()) > .1){
-    targetPositionRotationsW = targetPositionRotationsW - (inputs->getAxisFive() * 4096);
-    }*/
+    if(abs(inputs->getAxisFive()) > .1 && limitSwitch->Get() == 1){
+      targetPositionRotationsW = targetPositionRotationsW - (inputs->getAxisFive() * 4096); //* 2000);
+    }
+    else if(inputs->getAxisFive() > .1 && limitSwitch->Get() == 0){
+      targetPositionRotationsW = targetPositionRotationsW - (inputs->getAxisFive() * 4096); //* 2000);
+    }
     //Manual Shoulder Control
     if(abs(inputs->getY()) > 0.08){
       shoulderManual = (inputs->getY() * .6); // Set arm target rate the same as target movement
@@ -423,17 +426,7 @@ void Robot::TeleopPeriodic() {
     }
     else if (rotations > 2.5){ 
       rotations = 2.5;            
-    }
-
-    //Wrist max and min limits
-    /*
-    if (targetPositionRotationsW > Wrist->GetSelectedSensorPosition(0) + 700){
-      targetPositionRotationsW = Wrist->GetSelectedSensorPosition(0);
-    }
-    else if (targetPositionRotationsW < Wrist->GetSelectedSensorPosition(0) - 700){
-      targetPositionRotationsW = Wrist->GetSelectedSensorPosition(0);
-    }*/
-    
+    } 
     m_pidController.SetReference(rotations, rev::ControlType::kPosition);
     Wrist->Set(ControlMode::Position, targetPositionRotationsW);
   }  
@@ -479,9 +472,9 @@ void Robot::TeleopPeriodic() {
     shoulderPos = 2;
   }
   else{
-    //Manual Wrist Control
+    /*//Manual Wrist Control
     if(abs(inputs->getAxisFive()) > .1 && limitSwitch->Get() == 1){
-    targetPositionRotationsW = targetPositionRotationsW + (inputs->getAxisFive() * 4096); //* 2000);
+    targetPositionRotationsW = targetPositionRotationsW - (inputs->getAxisFive() * 4096); //* 2000);
     }
     //Manual Shoulder Control
     if(abs(inputs->getY()) > 0.05){
@@ -500,15 +493,6 @@ void Robot::TeleopPeriodic() {
     else if (rotations > 2.5){ 
       rotations = 2.5;            
     }
-
-    //Wrist max and min limits
-    /*if (targetPositionRotationsW > wristStart + 87000){
-      targetPositionRotationsW = wristStart + 87000;
-    }/*
-    else if (targetPositionRotationsW < -400000){
-      targetPositionRotationsW = -400000;
-    }
-    
     m_pidController.SetReference(rotations, rev::ControlType::kPosition);
     Wrist->Set(ControlMode::Position, targetPositionRotationsW);*/
   }  
