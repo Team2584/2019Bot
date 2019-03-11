@@ -407,7 +407,7 @@ void Robot::TeleopPeriodic() {
     if(abs(inputs->getAxisFive()) > .1 && limitSwitch->Get() == 1){
       targetPositionRotationsW = targetPositionRotationsW - (inputs->getAxisFive() * 4096); //* 2000);
     }
-    else if(inputs->getAxisFive() > .1 && limitSwitch->Get() == 0){
+    else if(inputs->getAxisFive() > .1 && limitSwitch->Get() == 0){ //Wrist can go down after pressing switch
       targetPositionRotationsW = targetPositionRotationsW - (inputs->getAxisFive() * 4096); //* 2000);
     }
     //Manual Shoulder Control
@@ -582,9 +582,14 @@ else{
   else if(inputs->getPOVPartner() == 270){
     m_robotDrive.ArcadeDrive(0, -.2);
   }
+  else if(inputs->getPOVPartner() == 0){
+    m_robotDrive.ArcadeDrive(.2,0);
+  }
+  else if(inputs->getPOVPartner() == 180){
+    m_robotDrive.ArcadeDrive(-.2,0);
+  }
   else{
-    //m_robotDrive.ArcadeDrive(-(inputs->getYPartner()*0.40), (inputs->getAxisFourPartner()*0.475));
-    m_robotDrive.ArcadeDrive(-(joyStickYAxis*0.5), (joyStickXAxis*0.5));
+    m_robotDrive.ArcadeDrive(-(joyStickYAxis*0.75), (joyStickXAxis*0.5));
   }
 
 }
