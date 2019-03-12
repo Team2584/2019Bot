@@ -76,7 +76,7 @@ int _printLoops = 0;
   rev::CANEncoder m_encoder = m_shoulder.GetEncoder();
 
     // PID coefficients
-  double kP = 0.85, kI = 0.00005, kD = 0.05, kIz = 0, kFF = 0, kMaxOutput = 0.3, kMinOutput = -0.6;
+  double kP = 0.85, kI = 0.00005, kD = 0.05, kIz = 0, kFF = 0, kMaxOutput = 0.3, kMinOutput = -0.75;
 
 //LOGITECH CAMERA INIT
 static void VisionThread()
