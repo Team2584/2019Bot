@@ -289,7 +289,7 @@ void Robot::TeleopPeriodic() {
     Hatch->Set(ControlMode::Position, hatchSpeed);
     }
   else if(hatchPos == 0 && inputs->getButtonFive()){
-    targetPositionRotationsH = hatchStart - 2050;//2150/.73;
+    targetPositionRotationsH = hatchStart - 2150/.73;
     hatchStart = targetPositionRotationsH;
     Hatch->Set(ControlMode::Position, targetPositionRotationsH);
     hatchPos = 2;
@@ -298,15 +298,15 @@ void Robot::TeleopPeriodic() {
     if (hatchHeld){
       targetPositionRotationsH = hatchStart; // Resets hatch after manual control
     }
-    targetPositionRotationsH =  targetPositionRotationsH - 1370;//1350/.73;
+    targetPositionRotationsH =  targetPositionRotationsH - 1350/.73;
     Hatch->Set(ControlMode::Position, targetPositionRotationsH);
     hatchPos = 2;
   }
   else if(hatchPos == 2 && inputs->getButtonSix()){ 
     if (hatchHeld){
-      targetPositionRotationsH = hatchStart + 1370;//1350/.73; // resets hatch after manual control
+      targetPositionRotationsH = hatchStart + 1350/.73; // resets hatch after manual control
     }   
-    targetPositionRotationsH = targetPositionRotationsH + 1370;//1350/.73;
+    targetPositionRotationsH = targetPositionRotationsH + 1350/.73;
     Hatch->Set(ControlMode::Position, targetPositionRotationsH);
     hatchPos = 1;
   }
@@ -422,8 +422,8 @@ void Robot::TeleopPeriodic() {
     rotations = rotations + (shoulderManual);
 
     //Arm max and min limits
-    if (rotations < -93.75){ 
-      rotations = -93.75;      
+    if (rotations < -95){ 
+      rotations = -95;      
     }
     else if (rotations > 2.5){ 
       rotations = 2.5;            
@@ -584,10 +584,10 @@ else{
     m_robotDrive.ArcadeDrive(0, -.2);
   }
   else if(inputs->getPOVPartner() == 0){
-    m_robotDrive.ArcadeDrive(.2,0);
+    m_robotDrive.ArcadeDrive(.3,0);
   }
   else if(inputs->getPOVPartner() == 180){
-    m_robotDrive.ArcadeDrive(-.2,0);
+    m_robotDrive.ArcadeDrive(-.3,0);
   }
   else{
     m_robotDrive.ArcadeDrive(-(joyStickYAxis*0.75), (joyStickXAxis*0.5));
