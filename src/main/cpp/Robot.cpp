@@ -202,10 +202,7 @@ void Robot::AutonomousInit() {
 }
 
 void Robot::AutonomousPeriodic() {
-  if (m_autoSelected == kAutoNameCustom) {
-    
-  } else {
-  }
+  Robot::TeleopPeriodic();
 }
 
 //Setup Drive Function
@@ -538,9 +535,15 @@ void Robot::TeleopPeriodic() {
   else if(inputs->getPOVPartner() == 270){
     m_robotDrive.ArcadeDrive(0, -.2);
   }
+  else if(inputs->getPOVPartner() == 0){
+    m_robotDrive.ArcadeDrive(.3,0);
+  }
+  else if(inputs->getPOVPartner() == 180){
+    m_robotDrive.ArcadeDrive(-.3,0);
+  }
   else{
     //m_robotDrive.ArcadeDrive(-(inputs->getYPartner()*0.40), (inputs->getAxisFourPartner()*0.475));
-    m_robotDrive.ArcadeDrive(-(joyStickYAxis*0.5), (joyStickXAxis*0.5));
+    m_robotDrive.ArcadeDrive(-(joyStickYAxis*0.75), (joyStickXAxis*0.5));
   }
 
 }
