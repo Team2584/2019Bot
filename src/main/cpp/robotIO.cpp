@@ -11,9 +11,11 @@
 using namespace frc;
 using namespace std;
 
+    //Joystick Setup
     Joystick * m_stick = new Joystick(3);
     Joystick * m_partner = new Joystick(4);
 
+    //Setup Button Checks Main Controller
     bool buttonOne;
     bool buttonTwo;
     bool buttonThree;
@@ -30,7 +32,7 @@ using namespace std;
     bool axisFour;
     double axisFive;
 
-    
+    //Setup Button Checks Partner Controller
     double axisFivePartner;
     bool buttonOnePartner;
     bool buttonFourPartner;
@@ -48,10 +50,13 @@ using namespace std;
     double axisFourPartner;
     bool buttonSevenPartner;
     
+    //Controller Setup Function
 robotIO::robotIO() {
     Joystick * m_stick = new Joystick(3);
     Joystick * m_partner = new Joystick(4);
 }
+
+    //Button Get Functions
 bool robotIO::getButtonOne(){
     buttonOne = m_stick->GetRawButton(1);
     return buttonOne;
