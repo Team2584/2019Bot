@@ -390,9 +390,11 @@ void Robot::TeleopPeriodic() {
   }
   else{
     //Manual Wrist Control
-    if(abs(inputs->getAxisFive()) > .1){
-    //Amount of Wrist Rotations Changes as Stick is held
-    targetPositionRotationsW = targetPositionRotationsW - (inputs->getAxisFive() * 4096);
+    if(abs(inputs->getAxisFive()) > .1 && limitSwitch->Get() == 1){
+      targetPositionRotationsW = targetPositionRotationsW - (inputs->getAxisFive() * 4096); //* 2000);
+    }
+    else if(inputs->getAxisFive() > .1 && limitSwitch->Get() == 0){ //Wrist can go down after pressing switch
+      targetPositionRotationsW = targetPositionRotationsW - (inputs->getAxisFive() * 4096); //* 2000);
     }
     //Manual Shoulder Control
     if(abs(inputs->getY()) > 0.08){
