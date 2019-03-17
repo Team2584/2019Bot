@@ -310,7 +310,7 @@ void Robot::TeleopPeriodic() {
         hatchHeld = true;
     }
     else if(hatchHeld == true){
-      Hatch->Set(ControlMode::PercentOutput, 0.05 * hatchCurrent);
+      Hatch->Set(ControlMode::PercentOutput, 0.1);
     }
     else{
       Hatch->Set(ControlMode::PercentOutput, 0);
@@ -432,7 +432,7 @@ void Robot::TeleopPeriodic() {
 
       if(inputs->getAxisFive() > 0.1){
       wristCurrent = (inputs->getAxisFive());
-        Wrist->Set(ControlMode::Current, 0.5 * wristCurrent);
+        Wrist->Set(ControlMode::Current, 4 * wristCurrent);
         wristLast = Wrist->GetSelectedSensorPosition(0);
         }
       else if(inputs->getAxisFive() < -0.1){
