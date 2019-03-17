@@ -220,7 +220,7 @@ double wristCurrent;
 double wristPosition;
 double wristLast;
 bool isDeployed = false;
-bool climbed = false;
+bool climbed;
 double rotations;
 bool hatchStarted;
 double hatchGoal;
@@ -228,7 +228,7 @@ double hatchCurrent;
 double hatchPosition;
 double hatchLast;
 double wristHold;
-
+bool isUp;
 
 
 void Robot::TeleopInit() {
@@ -241,6 +241,8 @@ void Robot::TeleopInit() {
   wristLast  = Wrist->GetSelectedSensorPosition(0);
   rotations = 0.2;
   hatchStarted = false;
+  isUp = 0;
+  climbed = false;
 } 
 
   //SPEED SETUP
@@ -249,7 +251,6 @@ void Robot::TeleopInit() {
   double rollerSpeed = 0;
   double crawlSpeed = 0;  
   double wristSpeed = 0;
-  bool isUp = 0;
   double shoulderManual = 0;
 
   //POSITION SETUP
