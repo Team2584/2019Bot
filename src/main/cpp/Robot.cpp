@@ -222,6 +222,12 @@ double wristLast;
 bool isDeployed = false;
 bool climbed = false;
 double rotations;
+bool hatchStarted;
+double hatchGoal;
+double hatchCurrent;
+double hatchPosition;
+double hatchLast;
+double wristHold;
 
 
 
@@ -230,10 +236,11 @@ void Robot::TeleopInit() {
   wristStart = Wrist->GetSelectedSensorPosition(0);
   hatchPos = 0;
   shoulderPos = 0;
-  hatchStart = Hatch->GetSelectedSensorPosition(0);
+  hatchLast = Hatch->GetSelectedSensorPosition(0);
   targetPositionRotationsW = wristStart;
   wristLast  = Wrist->GetSelectedSensorPosition(0);
   rotations = 0.2;
+  hatchStarted = false;
 } 
 
   //SPEED SETUP
@@ -264,13 +271,13 @@ void Robot::TeleopPeriodic() {
   //  //    //    //  //        //       //       //  //
   //    //  ///////   ////////  //////// //////// //    //
 
-  if(inputs->getButtonTwo()||inputs->getButtonTwoPartner()){
+  if(inputs->getButtonThree()||inputs->getButtonThreePartner()){
     //Roller Speed Max
     rollerSpeed = 1;
     Roller->Set(ControlMode::PercentOutput, rollerSpeed);
   }
 
-  else if(inputs->getButtonThree()||inputs->getButtonThreePartner()){
+  else if(inputs->getButtonTwo()||inputs->getButtonTwoPartner()){
     //Roller Speed Max Reversed
     rollerSpeed = -1;
     Roller->Set(ControlMode::PercentOutput, rollerSpeed);    
@@ -294,39 +301,20 @@ void Robot::TeleopPeriodic() {
   //Sets Boolean for Passive Hatch Power
   bool hatchHeld = false;
 
-    //Manual hatch control
-  if(inputs->getLT() == 1){
-    hatchSpeed = targetPositionRotationsH - 500;
-    hatchHeld = true;
-    Hatch->Set(ControlMode::Position, hatchSpeed);
-  }
-  else if(inputs->getRT() == 1){
-    hatchSpeed = targetPositionRotationsH + inputs->getRT() * 500;
-    hatchHeld = true;
-    Hatch->Set(ControlMode::Position, hatchSpeed);
+  if(inputs->getButtonSix() == 1){
+        Hatch->Set(ControlMode::PercentOutput, 0.35);
+        hatchHeld = false;
     }
-  else if(hatchPos == 0 && inputs->getButtonFive()){
-    targetPositionRotationsH = hatchStart - 2150;
-    hatchStart = targetPositionRotationsH;
-    Hatch->Set(ControlMode::Position, targetPositionRotationsH);
-    hatchPos = 2;
-  }
-  else if (hatchPos == 1 && inputs->getButtonFive()){
-    if (hatchHeld){
-      targetPositionRotationsH = hatchStart; // Resets hatch after manual control
+    else if(inputs->getButtonFive() == 1){
+        Hatch->Set(ControlMode::PercentOutput, -0.35);
+        hatchHeld = true;
     }
-    targetPositionRotationsH =  targetPositionRotationsH - 1350;
-    Hatch->Set(ControlMode::Position, targetPositionRotationsH);
-    hatchPos = 2;
-  }
-  else if(hatchPos == 2 && inputs->getButtonSix()){ 
-    if (hatchHeld){
-      targetPositionRotationsH = hatchStart + 1350; // resets hatch after manual control
-    }   
-    targetPositionRotationsH = targetPositionRotationsH + 1350;
-    Hatch->Set(ControlMode::Position, targetPositionRotationsH);
-    hatchPos = 1;
-  }
+    else if(hatchHeld == true){
+      Hatch->Set(ControlMode::PercentOutput, 0.05 * hatchCurrent);
+    }
+    else{
+      Hatch->Set(ControlMode::PercentOutput, 0);
+    }
 
   //Shoulder & Wrist PID Cargo
 
@@ -432,12 +420,12 @@ void Robot::TeleopPeriodic() {
     //Manual Wrist Control
     if(inputs->getAxisFive() > 0.1 && limitSwitch->Get() == 1){
       wristCurrent = (inputs->getAxisFive());
-        Wrist->Set(ControlMode::Current, 1.75 * wristCurrent);
+        Wrist->Set(ControlMode::Current, 4 * wristCurrent);
         wristLast = Wrist->GetSelectedSensorPosition(0);
     }
     else if(inputs->getAxisFive() < -0.1){
       wristCurrent = (inputs->getAxisFive());
-        Wrist->Set(ControlMode::Current, 4 * wristCurrent);
+        Wrist->Set(ControlMode::Current, 10 * wristCurrent);
         wristLast  = Wrist->GetSelectedSensorPosition(0);
     }
     else if(limitSwitch->Get() == 0){
@@ -461,8 +449,9 @@ void Robot::TeleopPeriodic() {
     }
     else{
       wristPosition = Wrist->GetSelectedSensorPosition(0);
-      wristCurrent = (wristLast - wristPosition) * 1/220000;
-      Wrist->Set(ControlMode::Current, -5 * wristCurrent);
+      wristHold = (wristLast - wristPosition) * 1/220000;
+      wristHold != 0;
+      Wrist->Set(ControlMode::Current, -7.5 * wristHold);
     }
 
     /*if(isDeployed == false && inputs->getButtonEightPartner()){
@@ -615,7 +604,7 @@ void Robot::TeleopPeriodic() {
   }
   else{
     //m_robotDrive.ArcadeDrive(-(inputs->getYPartner()*0.40), (inputs->getAxisFourPartner()*0.475));
-    m_robotDrive.ArcadeDrive(-(joyStickYAxis*0.75), (joyStickXAxis*0.5));
+    m_robotDrive.ArcadeDrive(-(joyStickYAxis*0.65), (joyStickXAxis*0.5));
   }
 
 }

@@ -63,12 +63,12 @@ robotIO::robotIO() {
 
     //Button Get Functions
 bool robotIO::getButtonOne(){
-    buttonOne = m_stick->GetRawButton(1);
+    buttonOne = m_stick->GetRawButton(2);
     return buttonOne;
 }
 
 bool robotIO::getButtonTwo(){
-    buttonTwo = m_stick->GetRawButton(2);
+    buttonTwo = m_stick->GetRawButton(1);
     return buttonTwo;
 }
 
@@ -93,12 +93,12 @@ bool robotIO::getButtonSix(){
 }
 
 bool robotIO::getButtonSeven(){
-    buttonSeven = m_stick->GetRawButton(7);
+    buttonSeven = m_stick->GetRawButton(9);
     return buttonSeven;
 }
 
 bool robotIO::getButtonEight(){
-    buttonEight = m_stick->GetRawButton(8);
+    buttonEight = m_stick->GetRawButton(10);
     return buttonEight;
 }
 
@@ -133,12 +133,12 @@ double robotIO::getAxisFive(){
 }
 
 double robotIO::getAxisFour(){
-    axisFour = m_stick->GetRawAxis(4);
+    axisFour = m_stick->GetRawAxis(5);
     return axisFour;
 }
 
 bool robotIO::getButtonOnePartner(){
-    buttonOnePartner = m_partner->GetRawButton(1);
+    buttonOnePartner = m_partner->GetRawButton(2);
         return buttonOnePartner;
     //EXAMPLE CASE FUNCTION FOR PS4 CONTROLLER USAGE
     /*switch(CONTROLLER_TYPE){
@@ -189,7 +189,7 @@ double robotIO::getYPartner(){
 }
 
 bool robotIO::getButtonTwoPartner(){
-    buttonTwoPartner = m_partner->GetRawButton(2);
+    buttonTwoPartner = m_partner->GetRawButton(1);
     return buttonTwoPartner;
 }
 
@@ -199,7 +199,7 @@ bool robotIO::getButtonFourPressed(){
 }
 
 bool robotIO::getButtonOnePressed(){
-    buttonOnePressed = m_stick->GetRawButtonPressed(1);
+    buttonOnePressed = m_stick->GetRawButtonPressed(2);
     return buttonOnePressed;
 }
 
@@ -214,16 +214,16 @@ double robotIO::getAxisFivePartner(){
 }
 
 bool robotIO::getButtonEightPartner(){
-    buttonEightPartner = m_partner->GetRawButton(8);
+    buttonEightPartner = m_partner->GetRawButton(10);
     return buttonEightPartner;
 }
 
 bool robotIO::getButtonSevenPartner(){
-    buttonSevenPartner = m_partner->GetRawButton(7);
+    buttonSevenPartner = m_partner->GetRawButton(9);
     return buttonSevenPartner;
 }
 
 double robotIO::getAxisFourPartner(){
-    axisFourPartner = m_partner->GetRawAxis(4);
+    axisFourPartner = m_partner->GetRawAxis(2);
     return axisFourPartner;
 }
