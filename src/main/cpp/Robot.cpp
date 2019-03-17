@@ -24,6 +24,7 @@
 #include "networktables/NetworkTableInstance.h"
 #include "robotIO.h"
 #include "Constants.h"
+#include "frc/Watchdog.h"
 
 using namespace frc;
 using namespace std;
@@ -76,7 +77,7 @@ int _printLoops = 0;
   rev::CANEncoder m_encoder = m_shoulder.GetEncoder();
 
     // PID coefficients
-  double kP = 0.85, kI = 0.00005, kD = 0.05, kIz = 0, kFF = 0, kMaxOutput = 0.3, kMinOutput = -0.75;
+  double kP = 0.60, kI = 0.00005, kD = 0.05, kIz = 0, kFF = 0, kMaxOutput = 0.3, kMinOutput = -0.80;
 
 //LOGITECH CAMERA INIT
 static void VisionThread()
@@ -144,7 +145,7 @@ void Robot::RobotInit() {
 	Hatch->Config_kD(kPIDLoopIdx, 0.0, kTimeoutMs);
 
   //CREATE WRIST PID
-  int absolutePositionW = Wrist->GetSelectedSensorPosition(0) & 0xFFF;
+  /*int absolutePositionW = Wrist->GetSelectedSensorPosition(0) & 0xFFF;
   Wrist->SetSelectedSensorPosition(absolutePositionW, kPIDLoopIdx,
 	  kTimeoutMs);
   Wrist->ConfigSelectedFeedbackSensor(
@@ -160,7 +161,7 @@ void Robot::RobotInit() {
   Wrist->Config_kF(kPIDLoopIdx, 0.0, kTimeoutMs);
 	Wrist->Config_kP(kPIDLoopIdx, 0.1, kTimeoutMs);
 	Wrist->Config_kI(kPIDLoopIdx, 0.001, kTimeoutMs);
-	Wrist->Config_kD(kPIDLoopIdx, 0.0, kTimeoutMs);
+	Wrist->Config_kD(kPIDLoopIdx, 0.0, kTimeoutMs);*/
 
   m_chooser.SetDefaultOption(kAutoNameDefault, kAutoNameDefault);
   m_chooser.AddOption(kAutoNameCustom, kAutoNameCustom);
@@ -213,6 +214,16 @@ int shoulderPos;
 double wristStart;
 double hatchStart;
 int hatchPos;
+double targetPositionRotationsW; 
+double wristGoal;
+double wristCurrent;
+double wristPosition;
+double wristLast;
+bool isDeployed = false;
+bool climbed = false;
+double rotations;
+
+
 
 void Robot::TeleopInit() {
   //Setup Starting Positions for PID
@@ -220,6 +231,9 @@ void Robot::TeleopInit() {
   hatchPos = 0;
   shoulderPos = 0;
   hatchStart = Hatch->GetSelectedSensorPosition(0);
+  targetPositionRotationsW = wristStart;
+  wristLast  = Wrist->GetSelectedSensorPosition(0);
+  rotations = 0.2;
 } 
 
   //SPEED SETUP
@@ -233,10 +247,8 @@ void Robot::TeleopInit() {
 
   //POSITION SETUP
   double pos;
-  double rotations = 0.2;
 
   //ROTATIONS SETUP
-  double targetPositionRotationsW; // Wrist positions
   double targetPositionRotationsH; // Hatch positions
  
   int maxPos = 2;
@@ -294,7 +306,7 @@ void Robot::TeleopPeriodic() {
     Hatch->Set(ControlMode::Position, hatchSpeed);
     }
   else if(hatchPos == 0 && inputs->getButtonFive()){
-    targetPositionRotationsH = hatchStart - 2150/.73;
+    targetPositionRotationsH = hatchStart - 2150;
     hatchStart = targetPositionRotationsH;
     Hatch->Set(ControlMode::Position, targetPositionRotationsH);
     hatchPos = 2;
@@ -303,15 +315,15 @@ void Robot::TeleopPeriodic() {
     if (hatchHeld){
       targetPositionRotationsH = hatchStart; // Resets hatch after manual control
     }
-    targetPositionRotationsH =  targetPositionRotationsH - 1350/.73;
+    targetPositionRotationsH =  targetPositionRotationsH - 1350;
     Hatch->Set(ControlMode::Position, targetPositionRotationsH);
     hatchPos = 2;
   }
   else if(hatchPos == 2 && inputs->getButtonSix()){ 
     if (hatchHeld){
-      targetPositionRotationsH = hatchStart + 1350/.73; // resets hatch after manual control
+      targetPositionRotationsH = hatchStart + 1350; // resets hatch after manual control
     }   
-    targetPositionRotationsH = targetPositionRotationsH + 1350/.73;
+    targetPositionRotationsH = targetPositionRotationsH + 1350;
     Hatch->Set(ControlMode::Position, targetPositionRotationsH);
     hatchPos = 1;
   }
@@ -389,11 +401,6 @@ void Robot::TeleopPeriodic() {
     shoulderPos = 4; 
   }
   else{
-    //Manual Wrist Control
-    if(abs(inputs->getAxisFive()) > .1){
-    //Amount of Wrist Rotations Changes as Stick is held
-    targetPositionRotationsW = targetPositionRotationsW - (inputs->getAxisFive() * 4096);
-    }
     //Manual Shoulder Control
     if(abs(inputs->getY()) > 0.08){
       //Amount of Wrist Rotations Changes as Stick is held
@@ -420,8 +427,66 @@ void Robot::TeleopPeriodic() {
     //Setup PID Controller
     m_pidController.SetReference(rotations, rev::ControlType::kPosition);
     //Set Wrist Position
-    Wrist->Set(ControlMode::Position, targetPositionRotationsW);
   }  
+  
+    //Manual Wrist Control
+    if(inputs->getAxisFive() > 0.1 && limitSwitch->Get() == 1){
+      wristCurrent = (inputs->getAxisFive());
+        Wrist->Set(ControlMode::Current, 1.75 * wristCurrent);
+        wristLast = Wrist->GetSelectedSensorPosition(0);
+    }
+    else if(inputs->getAxisFive() < -0.1){
+      wristCurrent = (inputs->getAxisFive());
+        Wrist->Set(ControlMode::Current, 4 * wristCurrent);
+        wristLast  = Wrist->GetSelectedSensorPosition(0);
+    }
+    else if(limitSwitch->Get() == 0){
+
+      if(inputs->getAxisFive() > 0.1){
+      wristCurrent = (inputs->getAxisFive());
+        Wrist->Set(ControlMode::Current, 0.5 * wristCurrent);
+        wristLast = Wrist->GetSelectedSensorPosition(0);
+        }
+      else if(inputs->getAxisFive() < -0.1){
+      wristCurrent = (inputs->getAxisFive());
+        Wrist->Set(ControlMode::Current, 0.5 * wristCurrent);
+        wristLast  = Wrist->GetSelectedSensorPosition(0);
+        }
+        else if(abs(wristCurrent) > 20){
+       wristCurrent = 0;
+        }
+    }
+    else if(abs(wristCurrent) > 20){
+      wristCurrent = 0;
+    }
+    else{
+      wristPosition = Wrist->GetSelectedSensorPosition(0);
+      wristCurrent = (wristLast - wristPosition) * 1/220000;
+      Wrist->Set(ControlMode::Current, -5 * wristCurrent);
+    }
+
+    /*if(isDeployed == false && inputs->getButtonEightPartner()){
+      rotations = 6;
+      m_pidController.SetReference(rotations, rev::ControlType::kPosition);
+      int shoulderPos = m_shoulder->GetEncoder();
+      if(shoulderPos > 4 && shoulderPos < 5.5){
+        m_pidController.SetReference(rotations, rev::ControlType::kPosition);
+        wristCurrent = 1;
+        Wrist->Set(ControlMode::Current, 5 * wristCurrent);
+      }
+    }*/
+
+
+    /*if(abs(inputs->getAxisFive()) > .1 && limitSwitch->Get() == 1){
+    //Amount of Wrist Rotations Changes as Stick is held
+    targetPositionRotationsW = wristStart - (inputs->getAxisFive() * 4096);
+    //Wrist->Set(ControlMode::Position, targetPositionRotationsW);
+    }
+    else if(inputs->getAxisFive() > .1 && limitSwitch->Get() == 0){
+    //Amount of Wrist Rotations Changes as Stick is held
+    targetPositionRotationsW = wristStart - (inputs->getAxisFive() * 4096);
+    //Wrist->Set(ControlMode::Position, targetPositionRotationsW);
+    }*/
 
   //Shoulder & Wrist PID Hatch
 
@@ -461,20 +526,25 @@ void Robot::TeleopPeriodic() {
   if(inputs->getButtonSevenPartner()){
     //Climb Speed 75%
     climbSpeed = 0.75;
+    climbed = true;
   }
   else if(inputs->getButtonEightPartner()){
-    //Climb Speed -75%
-    climbSpeed = -0.75;
+    //Climb Speed -15%
+    climbSpeed = -0.15;
+    climbed = false;
   }
-  else{
+  else if(climbed == false){
     //Climber Off
     climbSpeed = 0.0;
+  }
+  else if(climbed == true){
+    climbSpeed = 0.15;
   }
 
   //CRAWL SPEED
   if(inputs->getButtonOnePartner()){
     //Crawl Speed -25%
-    crawlSpeed = -0.25;
+    crawlSpeed = -0.20;
   }
   else{
     //Crawler Off
@@ -489,8 +559,10 @@ void Robot::TeleopPeriodic() {
   //Smart Dashboard outputs
   SmartDashboard::PutNumber("YMain", inputs->getYPartner());
   SmartDashboard::PutNumber("XMain", inputs->getAxisFourPartner());
-  SmartDashboard::PutNumber("WristPos", Wrist->GetSelectedSensorPosition(0));
-  SmartDashboard::PutNumber("WristTargetPos", targetPositionRotationsW);
+  SmartDashboard::PutNumber("WristPosition", Wrist->GetSelectedSensorPosition(0));
+  SmartDashboard::PutNumber("WristStart", wristStart);
+  SmartDashboard::PutNumber("WristLast", wristLast);
+  SmartDashboard::PutNumber("WristCurrent", wristCurrent);
   SmartDashboard::PutNumber("HatchValue", Hatch->GetSelectedSensorPosition(0));
   SmartDashboard::PutNumber("HatchTargetPos", targetPositionRotationsH);
   SmartDashboard::PutNumber("HatchPos", hatchPos);
@@ -501,7 +573,7 @@ void Robot::TeleopPeriodic() {
   //Driver Control Inputs
   //Deadband modifier
   double joyStickYAxis = 0.0, joyStickXAxis = 0.0;
-  double deadBandY = 0.1, deadBandX = 0.12;
+  double deadBandY = 0.0, deadBandX = 0.0;
 
   //Deadband Setup
   if (abs(inputs->getYPartner()) < deadBandY) {
@@ -530,16 +602,16 @@ void Robot::TeleopPeriodic() {
 
   //dPad Steer
   if(inputs->getPOVPartner() == 90){
-    m_robotDrive.ArcadeDrive(0, .2);
+    m_robotDrive.ArcadeDrive(0, .25);
   }
   else if(inputs->getPOVPartner() == 270){
-    m_robotDrive.ArcadeDrive(0, -.2);
+    m_robotDrive.ArcadeDrive(0, -.25);
   }
   else if(inputs->getPOVPartner() == 0){
-    m_robotDrive.ArcadeDrive(.3,0);
+    m_robotDrive.ArcadeDrive(.20,0);
   }
   else if(inputs->getPOVPartner() == 180){
-    m_robotDrive.ArcadeDrive(-.3,0);
+    m_robotDrive.ArcadeDrive(-.20,0);
   }
   else{
     //m_robotDrive.ArcadeDrive(-(inputs->getYPartner()*0.40), (inputs->getAxisFourPartner()*0.475));

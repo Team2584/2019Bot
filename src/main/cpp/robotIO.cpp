@@ -15,6 +15,11 @@ using namespace std;
     Joystick * m_stick = new Joystick(3);
     Joystick * m_partner = new Joystick(4);
 
+    //CONTROLLER TYPE
+    //1 = LOGITECH
+    //2 = PS4
+    int CONTROLLER_TYPE = 1;
+
     //Setup Button Checks Main Controller
     bool buttonOne;
     bool buttonTwo;
@@ -134,7 +139,18 @@ double robotIO::getAxisFour(){
 
 bool robotIO::getButtonOnePartner(){
     buttonOnePartner = m_partner->GetRawButton(1);
-    return buttonOnePartner;
+        return buttonOnePartner;
+    //EXAMPLE CASE FUNCTION FOR PS4 CONTROLLER USAGE
+    /*switch(CONTROLLER_TYPE){
+        case 1:
+        buttonOnePartner = m_partner->GetRawButton(1);
+        return buttonOnePartner;
+        break;
+        case 2:
+        buttonOnePartner = m_partner->GetRawButton(3);
+        return buttonOnePartner;
+        break;
+    }*/
 }
 
 bool robotIO::getButtonFourPartner(){
