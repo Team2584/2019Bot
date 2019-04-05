@@ -36,6 +36,9 @@ using namespace std;
     double xAxis;
     bool axisFour;
     double axisFive;
+    double axisThree;
+    double axisFire;
+    bool buttonNine;
 
     //Setup Button Checks Partner Controller
     double axisFivePartner;
@@ -54,6 +57,7 @@ using namespace std;
     bool buttonEightPartner;
     double axisFourPartner;
     bool buttonSevenPartner;
+    double axisThreePartner;
     
     //Controller Setup Function
 robotIO::robotIO() {
@@ -135,6 +139,16 @@ double robotIO::getAxisFive(){
 double robotIO::getAxisFour(){
     axisFour = m_stick->GetRawAxis(5);
     return axisFour;
+}
+
+double robotIO::getAxisFire(){
+    axisFire = m_stick->GetRawAxis(4);
+    return axisFire;
+}
+
+double robotIO::getAxisThree(){
+    axisThree = m_stick->GetRawAxis(3);
+    return axisThree;
 }
 
 bool robotIO::getButtonOnePartner(){
@@ -226,4 +240,9 @@ bool robotIO::getButtonSevenPartner(){
 double robotIO::getAxisFourPartner(){
     axisFourPartner = m_partner->GetRawAxis(2);
     return axisFourPartner;
+}
+
+double robotIO::getAxisThreePartner(){
+    axisThreePartner = m_partner->GetRawAxis(3);
+    return axisThreePartner;
 }
