@@ -433,29 +433,6 @@ void Robot::TeleopPeriodic() {
    }
     Wrist->Set(ControlMode::Position, targetPositionRotationsW);
 
-    /*if(isDeployed == false && inputs->getButtonEightPartner()){
-      rotations = 6;
-      m_pidController.SetReference(rotations, rev::ControlType::kPosition);
-      int shoulderPos = m_shoulder->GetEncoder();
-      if(shoulderPos > 4 && shoulderPos < 5.5){
-        m_pidController.SetReference(rotations, rev::ControlType::kPosition);
-        wristCurrent = 1;
-        Wrist->Set(ControlMode::Current, 5 * wristCurrent);
-      }
-    }*/
-
-
-    /*if(abs(inputs->getAxisFive()) > .1 && limitSwitch->Get() == 1){
-    //Amount of Wrist Rotations Changes as Stick is held
-    targetPositionRotationsW = wristStart - (inputs->getAxisFive() * 4096);
-    //Wrist->Set(ControlMode::Position, targetPositionRotationsW);
-    }
-    else if(inputs->getAxisFive() > .1 && limitSwitch->Get() == 0){
-    //Amount of Wrist Rotations Changes as Stick is held
-    targetPositionRotationsW = wristStart - (inputs->getAxisFive() * 4096);
-    //Wrist->Set(ControlMode::Position, targetPositionRotationsW);
-    }*/
-
   //Shoulder & Wrist PID Hatch
 
   //////    //  //////        //    //
@@ -470,18 +447,6 @@ void Robot::TeleopPeriodic() {
     m_pidController.SetReference(rotations, rev::ControlType::kPosition);
     shoulderPos = 0;
   }
-  /*else if((shoulderPos == 0 || shoulderPos == 2) && (inputs->getPOV() == 0 || inputs->getPOV() == 180)){
-    //Mid Hatch Position
-    rotations = -53;
-    m_pidController.SetReference(rotations, rev::ControlType::kPosition);
-    shoulderPos = 1;
-  }
-  else if((shoulderPos == 1 || shoulderPos == 3) && inputs->getPOV() == 0){
-    //High Hatch Position
-    rotations = -89.5;
-    m_pidController.SetReference(rotations, rev::ControlType::kPosition);
-    shoulderPos = 2;
-  }*/
 
   //ClIMB SPEED
 
