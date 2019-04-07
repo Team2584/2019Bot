@@ -56,8 +56,6 @@ void wait ( int seconds )
 
 //AUTON VARIABLES INIT FOR WRIST DEPLOY
 bool shoulderUp = false;
-bool wristDeployed = false;
-bool fullyDeployed = false;
 double autonSPos = 0;
 
 //PID POSITION INT SETUP 
@@ -319,22 +317,37 @@ void Robot::TeleopPeriodic() {
   //    //  //    //      //      //        //    //
   //    //  //    //      //      ////////  //    //
 
-    if(hatchPos == 0 && inputs->getButtonFive()){
-    targetPositionRotationsH = hatchStart - 1800;
-    hatchStart = targetPositionRotationsH;
-    Hatch->Set(ControlMode::Position, targetPositionRotationsH);
-    hatchPos = 2;
+  if(inputs->getButtonFive() || inputs->getButtonFivePartner()){
+    hatchSpeed = -0.3;
+    Hatch->Set(ControlMode::PercentOutput, hatchSpeed);
+    hatchPos = 1;
   }
-  else if (hatchPos == 1 && inputs->getButtonFive()){
-    targetPositionRotationsH =  targetPositionRotationsH - 1300;
-    Hatch->Set(ControlMode::Position, targetPositionRotationsH);
-    hatchPos = 2;
+  else if (inputs->getButtonThree() || inputs->getButtonSixPartner()){
+    hatchSpeed = 0.3;
+    Hatch->Set(ControlMode::PercentOutput, hatchSpeed);
+    hatchPos = 0;
   }
-  else if(hatchPos == 2 && inputs->getButtonSix()){   
-    targetPositionRotationsH = targetPositionRotationsH + 1300;
+  else if(inputs->getButtonSix() || inputs->getButtonEightPS4Partner()){
+    hatchSpeed = 0.1;
+    Hatch->Set(ControlMode::PercentOutput, hatchSpeed);
+  }
+  else{
+    hatchSpeed = 0;
+    Hatch->Set(ControlMode::PercentOutput, hatchSpeed);
+  }
+  //
+  /*
+  if(inputs->getButtonFive() && hatchPos == 0){
+    targetPositionRotationsH = lowPos
     Hatch->Set(ControlMode::Position, targetPositionRotationsH);
     hatchPos = 1;
   }
+  else if (inputs->getButtonSix() && hatchPos == 1){
+    targetPositionRotationsH = highPos
+    Hatch->Set(ControlMode::Position, targetPositionRotationsH);
+    hatchPos = 0;
+  }*/
+  
 
   //Shoulder & Wrist PID Cargo
 
@@ -344,7 +357,21 @@ void Robot::TeleopPeriodic() {
   //        //  //    //      //
   //        //  /////           //////
 
-  if(shoulderPos < 2 && inputs->getButtonOnePressed()){
+  
+
+  if(inputs->getButtonEight() && inputs->getButtonSeven() && allHellHasBrokenLoose == false){
+    allHellHasBrokenLoose = true;
+  }
+  else if(inputs->getButtonEight() && inputs->getButtonSeven() && allHellHasBrokenLoose == true){
+    allHellHasBrokenLoose = false;
+    rotations = 0;
+  }
+  
+  if(allHellHasBrokenLoose == true){
+    m_shoulder.Set(inputs->getY());
+  }
+
+  else if(shoulderPos < 2 && inputs->getButtonOnePressed()){
     //Ball Grab Position
     //Amount of NEO Rotations
     rotations = -22;
@@ -408,6 +435,12 @@ void Robot::TeleopPeriodic() {
     //Sets Current Shoulder Position Value
     shoulderPos = 4; 
   }
+  else if(inputs->getPOV() == 180){
+    //Low Hatch Position
+    rotations = -15;
+    m_pidController.SetReference(rotations, rev::ControlType::kPosition);
+    shoulderPos = 0;
+  }
   else{
     //Manual Shoulder Control
     if(abs(inputs->getY()) > 0.08){
@@ -441,12 +474,6 @@ void Robot::TeleopPeriodic() {
   //        //  //    //      //    //
   //        //  /////         //    //
 
-  if(inputs->getPOV() == 180){
-    //Low Hatch Position
-    rotations = -15;
-    m_pidController.SetReference(rotations, rev::ControlType::kPosition);
-    shoulderPos = 0;
-  }
 
   //ClIMB SPEED
 
@@ -463,7 +490,7 @@ void Robot::TeleopPeriodic() {
   }
   else if(inputs->getButtonEightPartner()){
     //Climb Speed -15%
-    climbSpeed = -0.45;
+    climbSpeed = -1;
     climbed = false;
   }
   else if(climbed == false){
@@ -475,9 +502,9 @@ void Robot::TeleopPeriodic() {
   }
 
   //CRAWL SPEED
-  if(inputs->getButtonOnePartner()){
+  if(inputs->getButtonSixPartner()){
     //Crawl Speed -25%
-    crawlSpeed = -0.20;
+    crawlSpeed = -0.70;
   }
   else{
     //Crawler Off
@@ -510,7 +537,7 @@ void Robot::TeleopPeriodic() {
     if(inputs->getButtonFourPartner()){
       nt::NetworkTableInstance::GetDefault().GetTable("limelight")->PutNumber("pipeline", 1);
         double tv = table->GetNumber("tv", 0.0);
-        double tx = (table->GetNumber("tx", 0.0) );
+        double tx = table->GetNumber("tx", 0.0);
         limelightHasTarget = tv;
 
       if(tv == 1){
@@ -559,16 +586,16 @@ void Robot::TeleopPeriodic() {
 
   //dPad Steer
   if(inputs->getPOVPartner() == 90){
-    m_robotDrive.ArcadeDrive(0, .25);
+    m_robotDrive.ArcadeDrive(0, .35);
   }
   else if(inputs->getPOVPartner() == 270){
-    m_robotDrive.ArcadeDrive(0, -.25);
+    m_robotDrive.ArcadeDrive(0, -.35);
   }
   else if(inputs->getPOVPartner() == 0){
-    m_robotDrive.ArcadeDrive(.25,0);
+    m_robotDrive.ArcadeDrive(.35,0);
   }
   else if(inputs->getPOVPartner() == 180){
-    m_robotDrive.ArcadeDrive(-.25,0);
+    m_robotDrive.ArcadeDrive(-.35,0);
   }
 
 }

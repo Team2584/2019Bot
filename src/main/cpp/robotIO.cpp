@@ -58,6 +58,7 @@ using namespace std;
     double axisFourPartner;
     bool buttonSevenPartner;
     double axisThreePartner;
+    bool buttonEightPS4Partner;
     
     //Controller Setup Function
 robotIO::robotIO() {
@@ -230,6 +231,11 @@ double robotIO::getAxisFivePartner(){
 bool robotIO::getButtonEightPartner(){
     buttonEightPartner = m_partner->GetRawButton(10);
     return buttonEightPartner;
+}
+
+bool robotIO::getButtonEightPS4Partner(){
+    buttonEightPartner = m_partner->GetRawButton(8);
+    return buttonEightPS4Partner;
 }
 
 bool robotIO::getButtonSevenPartner(){

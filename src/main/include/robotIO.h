@@ -56,6 +56,7 @@ class robotIO {
   bool getButtonSixPartner();
   bool getButtonSevenPartner();
   bool getButtonEightPartner();
+  bool getButtonEightPS4Partner();
   int getPOVPartner();
   double getLTPartner();
   double getRTPartner();
