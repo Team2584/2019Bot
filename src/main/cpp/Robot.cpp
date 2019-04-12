@@ -263,7 +263,7 @@ void Robot::TeleopInit() {
   hatchStarted = false;
   isUp = 0;
   climbed = false;
-  kSteer = 0.03;
+  kSteer = 0.02;
   armMax = -93.75;
   armMin = 2.5;
 bool allHellHasBrokenLoose = false;
@@ -528,21 +528,22 @@ void Robot::TeleopPeriodic() {
   SmartDashboard::PutNumber("HatchPos", hatchPos);
   SmartDashboard::PutNumber("ShoulderPos", shoulderPos);
   SmartDashboard::PutNumber("ShoulderValue", m_encoder.GetPosition());
-  SmartDashboard::PutNumber("ShoulderTargetPos", rotations);  
-  SmartDashboard::PutNumber("tx", tx);  
-  SmartDashboard::PutNumber("tv", tv);  
+  SmartDashboard::PutNumber("ShoulderTargetPos", rotations);
+  SmartDashboard::PutNumber("tx", tx);
+  SmartDashboard::PutNumber("tv", tv);
 
   //Driver Control Inputs
 
     if(inputs->getButtonFourPartner()){
       nt::NetworkTableInstance::GetDefault().GetTable("limelight")->PutNumber("pipeline", 1);
+      //nt::NetworkTableInstance::GetDefault().GetTable("limelight")->PutNumber("ledMode", 2);
         double tv = table->GetNumber("tv", 0.0);
         double tx = table->GetNumber("tx", 0.0);
         limelightHasTarget = tv;
 
-      if(tv == 1){
+      if(limelightHasTarget == 1){
         double tx = (table->GetNumber("tx", 0.0) );
-        limelightTurn = (tx+0.5)*kSteer;
+        limelightTurn = (tx+0.5)*(kSteer+ (inputs->getYPartner()*0.005));
         m_robotDrive.ArcadeDrive(-(inputs->getYPartner()) * 0.55, limelightTurn);
       }
       else{
@@ -551,6 +552,7 @@ void Robot::TeleopPeriodic() {
     }
     else{
       nt::NetworkTableInstance::GetDefault().GetTable("limelight")->PutNumber("pipeline", 9);
+      //nt::NetworkTableInstance::GetDefault().GetTable("limelight")->PutNumber("ledMode", 0);
       m_robotDrive.ArcadeDrive(-(inputs->getYPartner()) * 0.85, inputs->getAxisFourPartner()*0.65);
     }
 
